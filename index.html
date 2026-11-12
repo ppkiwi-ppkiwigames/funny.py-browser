@@ -91,7 +91,7 @@ h1{font-size:clamp(40px,6vw,64px);letter-spacing:-3px;margin:0;font-weight:800}.
 <script>
 "use strict";
 const $=s=>document.querySelector(s);
-const defaults={search:"https://www.google.com/search?q=",favorites:[["Google","🔎","https://google.com"],["YouTube","▶️","https://youtube.com"],["Discord","💬","https://discord.com"],["Reddit","👾","https://reddit.com"],["Wikipedia","📚","https://wikipedia.org"],["Twitch","🟣","https://twitch.tv"],["GitHub","🐙","https://github.com"],["DuckDuckGo","🦆","https://duckduckgo.com"]],bookmarks:[],history:[],wallpaper:"",font:13,adblock:false};
+const defaults={search:"https://www.google.com/search?q=",wisp:"wss://wisp.mercurywork.shop/",customWisp:"",favorites:[["Google","🔎","https://google.com"],["YouTube","▶️","https://youtube.com"],["Discord","💬","https://discord.com"],["Reddit","👾","https://reddit.com"],["Wikipedia","📚","https://wikipedia.org"],["Twitch","🟣","https://twitch.tv"],["GitHub","🐙","https://github.com"],["DuckDuckGo","🦆","https://duckduckgo.com"]],bookmarks:[],history:[],wallpaper:"",font:13,adblock:false};
 let settings={...defaults,...load("funny_settings",{})};
 let tabs=[],activeId=null,logs=[],panel=null,inspectMode=false,dragTab=null;
 function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}}
@@ -107,10 +107,7 @@ function normalize(value){
 }
 function proxyUrl(url){if(!window.__uv$config)return null;return new URL(window.__uv$config.prefix,location.href).href+window.__uv$config.encodeUrl(url)}
 function activeTab(){return tabs.find(t=>t.id===activeId)}
-const BUILTIN_APPS=[
- {id:"interface-os",name:"Interf$ce OS",icon:"▦",description:"Open Interf$ce OS in a Funny.py app tab.",url:"https://whoisbro123.bonto.page",kind:"web"},
- {id:"lumin-demo",name:"Lumin SDK Demo",icon:"✦",description:"A tiny sample game built with the built-in Lumin-compatible SDK.",kind:"game"}
-];
+const BUILTIN_APPS=[\n {id:"interface-os",name:"Interf$ce OS",icon:"▦",description:"Interf$ce OS · whoisbro123.bonto.page",url:"https://whoisbro123.bonto.page",kind:"web"}\n];
 const EXTENSIONS=[
  {id:"compact-tabs",name:"Compact tabs",description:"Use a denser tab strip."},
  {id:"hide-bookmarks",name:"Hide bookmarks bar",description:"Hide the bookmarks strip to free up space."},
@@ -125,7 +122,7 @@ function setInternalContent(html){
  const box=$("#internalview");box.innerHTML=html;box.classList.add("visible");$("#home").style.display="none";
  const t=activeTab();if(t?.frame)t.frame.style.display="none";
 }
-function appIsInstalled(id){return (load("funny_installed_apps",["lumin-demo"])||[]).includes(id)}
+function appIsInstalled(id){return (load("funny_installed_apps",[])||[]).includes(id)}
 function installApp(id){const a=load("funny_installed_apps",["lumin-demo"]);if(!a.includes(id))a.push(id);save("funny_installed_apps",a);toast("App installed")}
 function uninstallApp(id){save("funny_installed_apps",(load("funny_installed_apps",["lumin-demo"])||[]).filter(x=>x!==id));toast("App uninstalled")}
 function openInternalApp(id){
@@ -140,14 +137,21 @@ function openInternalApp(id){
 }
 function renderAppStore(){
  const apps=BUILTIN_APPS.map(a=>'<article class="appcard"><div class="appicon">'+a.icon+'</div><strong>'+escapeHTML(a.name)+'</strong><p>'+escapeHTML(a.description)+'</p><button data-install="'+a.id+'">'+(appIsInstalled(a.id)?"Open":"Install")+'</button></article>').join("");
- setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Apps</h2><div class="internal-sub">Install apps before launching them. Installed apps are saved on this device.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appgrid">'+apps+'</div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//games\')">Games</button><button onclick="navigate(\'funny.py//extensions\')">Extensions</button><button onclick="navigate(\'funny.py//settings\')">Settings</button></div></div>');
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Apps</h2><div class="internal-sub">Install an app, then open it inside a Funny.py tab.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appgrid">'+apps+'</div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//games\')">Games hub</button><button onclick="navigate(\'funny.py//extensions\')">Extensions hub</button><button onclick="navigate(\'funny.py//settings\')">Settings</button></div></div>');
  $("#internalview").querySelectorAll("[data-install]").forEach(b=>b.onclick=()=>{const id=b.dataset.install;if(appIsInstalled(id))openInternalApp(id);else{installApp(id);renderAppStore()}});
 }
 function renderGames(){
- const custom=load("funny_custom_games",[]);const customCards=custom.map(g=>'<article class="appcard"><div class="appicon">'+escapeHTML(g.icon||"🎮")+'</div><strong>'+escapeHTML(g.name)+'</strong><p>'+escapeHTML(g.description||"Custom Lumin SDK game")+"</p><button data-custom-game=\'"+escapeHTML(g.id)+"\'>Play</button></article>").join("");
- setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Games</h2><div class="internal-sub">Games run inside Funny.py tabs using the built-in Lumin-compatible SDK.</div></div><button class="action" onclick="navigate(\'funny.py//apps\')">Apps</button></div><div class="appgrid"><article class="appcard"><div class="appicon">✦</div><strong>Lumin SDK Demo</strong><p>Sample clicker game to test the game runtime.</p><button id="launchDemo">'+(appIsInstalled("lumin-demo")?"Play":"Install & play")+'</button></article>'+customCards+"</div></div>");
- $("#launchDemo").onclick=()=>{if(!appIsInstalled("lumin-demo"))installApp("lumin-demo");navigate("funny.py//games/lumin-demo")};
- $("#internalview").querySelectorAll("[data-custom-game]").forEach(b=>b.onclick=()=>navigate("funny.py//games/"+b.dataset.customGame));
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Games</h2><div class="internal-sub">Powered by the official LuminSDK game catalog.</div></div><button class="action" onclick="navigate(\'funny.py//apps\')">Apps</button></div><div id="luminStatus" class="internal-sub">Loading LuminSDK game library…</div><div id="luminGames" style="min-height:420px;background:#101116;border-radius:14px;padding:12px"></div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//extensions\')">Extensions</button><button onclick="navigate(\'funny.py//settings\')">Settings</button></div></div>');
+ loadLuminSDK();
+}
+function loadLuminSDK(){
+ const status=$("#luminStatus"),mount=$("#luminGames");if(!mount)return;
+ const init=()=>{if(!window.Lumin||typeof window.Lumin.init!=="function"){if(status)status.textContent="LuminSDK loaded but its API is unavailable.";return}
+  Promise.resolve(window.Lumin.init({container:mount,theme:"dark",columns:5,rows:4,onReady:()=>{if(status)status.textContent="LuminSDK ready · choose a game to play"},onError:e=>{if(status)status.textContent="LuminSDK error: "+(e?.message||e)}})).catch(e=>{if(status)status.textContent="Could not load games: "+(e?.message||e)})};
+ if(window.Lumin){init();return}
+ let script=document.getElementById("lumin-sdk-script");
+ if(!script){script=document.createElement("script");script.id="lumin-sdk-script";script.src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js";script.async=true;script.onload=init;script.onerror=()=>{if(status)status.textContent="LuminSDK could not load. Check your connection or CDN access."};document.head.appendChild(script)}
+ else{script.addEventListener("load",init,{once:true})}
 }
 function renderGame(id){
  if(id!=="lumin-demo"){const custom=(load("funny_custom_games",[])||[]).find(g=>g.id===id);const render=window._funnyGameRender?.[id];if(custom&&typeof render==="function"){setInternalContent('<div class="internal-wrap"><div class="internal-top"><h2>'+escapeHTML(custom.name)+'</h2><button class="action" onclick="navigate(\'funny.py//games\')">All games</button></div><div id="customGameRoot"></div></div>');render($("#customGameRoot"),window.LuminSDK);return}setInternalContent('<div class="internal-wrap"><h2>Game not found</h2><button class="action" onclick="navigate(\'funny.py//games\')">Back</button></div>');return}
@@ -160,8 +164,14 @@ function renderExtensions(){
  $("#internalview").querySelectorAll("[data-ext]").forEach(b=>b.onclick=()=>{const id=b.dataset.ext;let list=load("funny_extensions",[]);list=list.includes(id)?list.filter(x=>x!==id):[...list,id];save("funny_extensions",list);applyExtensions();renderExtensions()});
 }
 function renderInternalSettings(){
- setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Funny.py Settings</h2><div class="internal-sub">Browser preferences and privacy controls.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appcard" style="max-width:650px"><strong>Privacy screen</strong><p>Show a neutral privacy screen when Funny.py loses focus. This does not imitate another website.</p><label><input id="privacyEnabled" type="checkbox"> Enable privacy screen</label><div class="field" style="width:100%;margin-top:12px"><label>Screen style</label><select id="privacyPreset"><option value="midnight">Midnight</option><option value="violet">Violet gradient</option><option value="plain">Plain dark</option></select></div><button class="primary" id="savePrivacy">Save privacy settings</button></div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//apps\')">Apps</button><button onclick="navigate(\'funny.py//games\')">Games</button><button onclick="navigate(\'funny.py//extensions\')">Extensions</button></div></div>');
- const cfg=load("funny_privacy",{enabled:false,preset:"midnight"});$("#privacyEnabled").checked=cfg.enabled;$("#privacyPreset").value=cfg.preset;
+ const cfg=load("funny_privacy",{enabled:false,preset:"midnight"});
+ const options=[["wss://wisp.mercurywork.shop/","Default WISP · mercurywork.shop"],["wss://truffled.lol","Truffled · truffled.lol"],["wss://anura.pro","Anura · anura.pro"],["custom","Custom WISP URL"]];
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Funny.py Settings</h2><div class="internal-sub">Browser preferences, WISP and privacy controls.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appgrid"><section class="appcard"><strong>Custom WISP</strong><p>Choose a WISP endpoint or enter your own. Saved as your preferred WISP; the current Ultraviolet engine still uses its configured Bare server.</p><div class="field" style="width:100%"><label>WISP server</label><select id="wispChoice">'+options.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join("")+'</select></div><div class="field" style="width:100%"><label>Custom WISP URL</label><input id="customWisp" placeholder="wss://your-wisp.example"></div><button class="primary" id="saveWisp">Save WISP setting</button><p id="wispStatus" style="color:#9da1b1">Saved: '+escapeHTML(settings.customWisp||settings.wisp||options[0][0])+'</p></section><section class="appcard"><strong>Privacy screen</strong><p>Show a neutral cover when Funny.py loses focus.</p><label><input id="privacyEnabled" type="checkbox"> Enable privacy screen</label><div class="field" style="width:100%;margin-top:12px"><label>Screen style</label><select id="privacyPreset"><option value="midnight">Midnight</option><option value="violet">Violet gradient</option><option value="plain">Plain dark</option></select></div><button class="primary" id="savePrivacy">Save privacy settings</button></section></div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//apps\')">Apps</button><button onclick="navigate(\'funny.py//games\')">Games</button><button onclick="navigate(\'funny.py//extensions\')">Extensions</button></div></div>');
+ $("#privacyEnabled").checked=cfg.enabled;$("#privacyPreset").value=cfg.preset;
+ const choice=$("#wispChoice"),custom=$("#customWisp");custom.value=settings.customWisp||"";
+ choice.value=settings.customWisp?"custom":(settings.wisp||options[0][0]);if(!Array.from(choice.options).some(o=>o.value===choice.value))choice.value=options[0][0];
+ custom.disabled=choice.value!=="custom";choice.onchange=()=>custom.disabled=choice.value!=="custom";
+ $("#saveWisp").onclick=()=>{const value=choice.value==="custom"?custom.value.trim():choice.value;if(!/^wss:\/\//i.test(value)){toast("WISP URL must start with wss://");return}settings.wisp=value;settings.customWisp=choice.value==="custom"?value:"";save("funny_settings",settings);$("#wispStatus").textContent="Saved: "+value;toast("WISP preference saved")};
  $("#savePrivacy").onclick=()=>{save("funny_privacy",{enabled:$("#privacyEnabled").checked,preset:$("#privacyPreset").value});applyPrivacyPreset();toast("Privacy settings saved")};
 }
 function renderInternal(route){
@@ -227,7 +237,7 @@ async function navigate(input,replace=false){
   settings.history.unshift({url,title:t.title,time:Date.now()});settings.history=settings.history.slice(0,150);save("funny_settings",settings);
  }catch(e){console.error(e);toast("Proxy startup failed: "+e.message);log("Navigation error: "+e.message,"error")}
 }
-function showHome(){const t=activeTab();if(t?.frame)t.frame.style.display="none";$("#internalview").classList.remove("visible");$("#home").style.display="flex";$("#address").value=t?.url||""}
+function showHome(){const t=activeTab();if(t?.frame)t.frame.style.display="none";if(t){t.url=null;t.title="New Tab"}$("#internalview").classList.remove("visible");$("#home").style.display="flex";$("#address").value="";renderTabs()}
 function goBack(){const t=activeTab();if(!t)return;if(t.index>=0){const url=t.history[t.index];t.index--;navigate(url,true)}else if(t.frame){try{t.frame.contentWindow.history.back()}catch(e){}}}
 function goForward(){const t=activeTab();if(!t)return;if(t.index+1<t.history.length){const url=t.history[++t.index];navigate(url,true)}else if(t.frame){try{t.frame.contentWindow.history.forward()}catch(e){}}}
 function renderBookmarks(){
