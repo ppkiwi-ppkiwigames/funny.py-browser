@@ -160,7 +160,9 @@ async function showProxiedPage(url,tab=activeTab(),forceReload=false){
  tab.loadedUrl=url;frame.dataset.loaded="1";frame.style.display="block";
 }
 window.addEventListener("message",e=>{
- const d=e.data;if(!d||!d.__funnyWispNav)return;
+ const d=e.data;if(!d)return;
+ if(d.__funnyRetryMusic){navigate("funny.py//music");return}
+ if(!d.__funnyWispNav)return;
  const tab=tabs.find(t=>t.id===d.tabId)||activeTab();if(tab&&tab.id===activeId)navigate(d.__funnyWispNav);
 });
 
@@ -257,7 +259,11 @@ function renderMusic(){
  $("#address").value="funny.py//music";
  log("Opening Funny.py Music through embedded WISP","navigation");
  showProxiedPage(musicUrl,tab,true).then(()=>log("Funny.py Music opened","load")).catch(e=>{
-  if(tab.id===activeId)toast("Music WISP load failed: "+e.message);
+  const frame=getTabFrame(tab);
+  if(tab.id===activeId){
+   frame.srcdoc='<html><body style="margin:0;background:#111218;color:#f4f4f7;font:14px system-ui;padding:28px"><h2 style="margin-top:0">Funny.py Music could not load</h2><p>'+escapeHTML(e.message)+'</p><p style="color:#aeb2c0">The selected WISP returned an error while requesting the music page. This is not an iframe display setting: the proxy or destination refused the request. Open Settings, choose another WISP server, then reload Music.</p><button onclick="parent.postMessage({__funnyRetryMusic:true},'*')" style="background:#7656e8;color:white;border:0;border-radius:8px;padding:9px 14px">Retry Music</button></body></html>';
+   frame.style.display="block";hideTabFrames(tab.id);toast("Music WISP load failed: "+e.message);
+  }
   log("Music error: "+e.message,"error")
  });
 }
