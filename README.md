@@ -15,7 +15,10 @@ The GUST runtime is self-contained, including its libcurl.js/WASM implementation
 - `funny.py//extensions` — Funny.py extension hub.
 - `funny.py//games` — LuminSDK game catalog.
 - `funny.py//games/<game-id>` — launch a LuminSDK game.
+- `funny.py//music` — open the hosted Funny.py Music page through the selected GUST WISP.
 - `funny.py//settings` — Funny.py settings, including WISP selection.
+
+The bottom favorites dock links directly to Games, Apps, Music, Settings, and Extensions. Music opens `https://shore-cloud-28296.surge.sh/pages/music.html` while keeping the internal `funny.py//music` route.
 
 ## WISP servers
 
