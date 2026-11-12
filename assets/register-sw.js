@@ -1,56 +1,47 @@
-// Register Ultraviolet from inside the /service/ directory.
-// GitHub Pages does not allow a worker outside that directory to claim its scope.
+// Register Ultraviolet at the Funny.py site root.
+// The browser page must be controlled by the worker for /service/ proxy requests to work.
 (() => {
   if (!("serviceWorker" in navigator)) {
     console.error("Funny.py requires Service Worker support.");
+    window.funnyPyServiceWorkerReady = Promise.reject(new Error("Service Workers are unavailable."));
     return;
   }
 
   const scriptUrl = document.currentScript.src;
   const siteRoot = new URL("../", scriptUrl);
-  const workerUrl = new URL("service/uv-sw.js", siteRoot);
-  const workerScope = new URL("service/", siteRoot).pathname;
+  const workerUrl = new URL("uv-sw.js", siteRoot);
+  const workerScope = siteRoot.pathname;
 
   async function registerFunnyPyWorker() {
     const registration = await navigator.serviceWorker.register(workerUrl.href, {
       scope: workerScope
     });
+    await navigator.serviceWorker.ready;
 
-    // An existing active worker can serve immediately.
-    if (registration.active && registration.active.state === "activated") {
-      return registration;
-    }
-
-    // On first install, wait for this scoped worker to activate.
-    const worker = registration.installing || registration.waiting;
-    if (!worker) {
-      throw new Error("The Ultraviolet service worker did not start installing.");
-    }
-
-    await new Promise((resolve, reject) => {
-      const checkState = () => {
-        if (worker.state === "activated") {
-          worker.removeEventListener("statechange", checkState);
-          resolve();
-        } else if (worker.state === "redundant") {
-          worker.removeEventListener("statechange", checkState);
-          reject(new Error("The Ultraviolet service worker became redundant."));
+    if (!navigator.serviceWorker.controller) {
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          navigator.serviceWorker.removeEventListener("controllerchange", onChange);
+          reject(new Error("The Funny.py service worker activated but did not take control. Reload the page."));
+        }, 7000);
+        function onChange() {
+          if (navigator.serviceWorker.controller) {
+            clearTimeout(timeout);
+            navigator.serviceWorker.removeEventListener("controllerchange", onChange);
+            resolve();
+          }
         }
-      };
-      worker.addEventListener("statechange", checkState);
-      checkState();
-    });
+        navigator.serviceWorker.addEventListener("controllerchange", onChange);
+        onChange();
+      });
+    }
 
+    console.log("Funny.py root service worker active:", registration.scope);
     return registration;
   }
 
-  window.funnyPyServiceWorkerReady = registerFunnyPyWorker()
-    .then((registration) => {
-      console.log("Funny.py service worker active for:", registration.scope);
-      return registration;
-    })
-    .catch((error) => {
-      console.error("Funny.py service worker registration failed:", error);
-      throw error;
-    });
+  window.funnyPyServiceWorkerReady = registerFunnyPyWorker().catch(error => {
+    console.error("Funny.py service worker registration failed:", error);
+    throw error;
+  });
 })();
