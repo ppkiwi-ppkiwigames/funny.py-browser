@@ -217,7 +217,9 @@ function renderInternalSettings(){
 }
 function renderMusic(){
  const musicUrl="https://shore-cloud-28296.surge.sh/pages/music.html";
- setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Music</h2><div class="internal-sub">Funny.py Music · hosted music player</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><iframe class="music-embed" title="Funny.py Music" src="'+musicUrl+'" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>');
+ const tab=activeTab();if(tab){tab.title="Funny.py Music";renderTabs()}
+ log("Opening Funny.py Music through GUST WISP","navigation");
+ showProxiedPage(musicUrl).then(()=>log("Funny.py Music opened","load")).catch(e=>{toast("Music could not open: "+e.message);log("Music error: "+e.message,"error")});
 }
 function renderInternal(route){
  const parts=route.split("/");const section=parts[0]||"home";
