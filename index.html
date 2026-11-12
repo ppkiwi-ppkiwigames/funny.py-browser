@@ -34,7 +34,7 @@
         navigator.serviceWorker.getRegistrations().then(function (registrations) {
             const stale = registrations.filter(function (registration) {
                 const worker = registration.active || registration.waiting || registration.installing;
-                if (!worker || !/(?:uv-sw\\.js|service\\/uv-sw\\.js)/i.test(worker.scriptURL)) return false;
+                if (!worker || !/(?:uv-sw\.js|service\/uv-sw\.js)/i.test(worker.scriptURL)) return false;
                 return new URL(registration.scope).pathname.startsWith(basePath);
             });
             if (!stale.length) return;
