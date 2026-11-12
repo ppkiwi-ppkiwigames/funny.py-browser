@@ -103,7 +103,7 @@ function proxyUrl(url){if(!window.__uv$config)return null;return new URL(window.
 function activeTab(){return tabs.find(t=>t.id===activeId)}
 function createTab(url=null){
  const tab={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),url:null,title:"New Tab",history:[],index:-1,frame:null};
- tabs.push(tab);activeId=tab.id;renderTabs();
+ tabs.push(tab);activeId=tab.id;tabs.forEach(x=>{if(x.frame){x.frame.style.display="none";x.frame.classList.remove("active")}});renderTabs();
  if(url)navigate(url);else showHome();
  return tab;
 }
