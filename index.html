@@ -80,7 +80,7 @@ h1{font-size:clamp(40px,6vw,64px);letter-spacing:-3px;margin:0;font-weight:800}.
     <div class="homehead"><span>Quick access</span><button class="action" id="editFavorites">Edit favorites</button></div>
     <div id="favorites"></div>
     <div id="clock">--:--</div><div id="date"></div>
-    <div id="homehint">Funny.py Browser · Powered by GUST WISP</div>
+    <div id="homehint">Funny.py Browser · Powered by embedded WISP</div>
    </div>
   </div>
   <div id="internalview"></div>
@@ -111,26 +111,57 @@ async function ensureGustEngine(){
  try{return await funnyWispReady}catch(e){funnyWispReady=null;throw e}
 }
 function funnyProxyUrl(raw,base){try{const u=new URL(raw,base);if(!/^https?:$/.test(u.protocol))return null;return u.href}catch(e){return null}}
-async function showProxiedPage(url){
- const curl=await ensureGustEngine(),target=funnyProxyUrl(url,location.href);
+function hideTabFrames(exceptId=null){
+ tabs.forEach(t=>{if(t.frame)t.frame.style.display=t.id===exceptId?"block":"none"});
+}
+function getTabFrame(tab){
+ if(!tab)throw new Error("No active tab");
+ if(!tab.frame){
+  const frame=document.createElement("iframe");
+  frame.id="funnyPageFrame-"+tab.id;
+  frame.title="Funny.py page";
+  frame.setAttribute("sandbox","allow-scripts allow-forms allow-popups allow-downloads allow-modals allow-pointer-lock");
+  frame.style.cssText="position:absolute;inset:0;width:100%;height:100%;border:0;background:white;z-index:2;display:none";
+  tab.frame=frame;
+  $("#stage").insertBefore(frame,$("#sidepanel"));
+ }
+ return tab.frame;
+}
+async function showProxiedPage(url,tab=activeTab(),forceReload=false){
+ if(!tab)throw new Error("No active tab");
+ const frame=getTabFrame(tab),token=(tab.navToken||0)+1;tab.navToken=token;
+ hideTabFrames(tab.id);
+ $("#home").style.display="none";$("#internalview").classList.remove("visible");
+ if(!forceReload&&tab.loadedUrl===url&&frame.dataset.loaded==="1"){frame.style.display="block";return}
+ frame.style.display="block";
+ const curl=await ensureGustEngine();
+ if(tab.navToken!==token)return;
+ const target=funnyProxyUrl(url,location.href);
  if(!target)throw new Error("Enter a valid http:// or https:// address");
  const response=await curl.fetch(target,{redirect:"follow"});
+ if(tab.navToken!==token)return;
  if(!response.ok&&response.status!==0)throw new Error("WISP returned HTTP "+response.status);
  const type=response.headers.get("content-type")||"";
  if(!/html|xhtml/i.test(type)){
-  const blob=await response.blob(),objectUrl=URL.createObjectURL(blob);
-  funnyCurrentUrl=target;
-  let frame=$("#funnyPageFrame");if(!frame){frame=document.createElement("iframe");frame.id="funnyPageFrame";frame.style.cssText="position:absolute;inset:0;width:100%;height:100%;border:0;background:white;z-index:2";$("#stage").insertBefore(frame,$("#sidepanel"))}
-  frame.style.display="block";frame.src=objectUrl;$("#home").style.display="none";$("#internalview").classList.remove("visible");return;
+  const blob=await response.blob();if(tab.navToken!==token)return;
+  const objectUrl=URL.createObjectURL(blob);
+  if(frame.dataset.objectUrl)URL.revokeObjectURL(frame.dataset.objectUrl);
+  frame.dataset.objectUrl=objectUrl;frame.removeAttribute("srcdoc");frame.src=objectUrl;
+ }else{
+  let html=await response.text();if(tab.navToken!==token)return;
+  const finalUrl=response.url||target;
+  const baseTag='<base href="'+escapeHTML(finalUrl)+'">';
+  const bridge='<script>(function(){const base=document.baseURI;document.addEventListener("click",function(e){let a=e.target.closest("a[href]");if(!a)return;let u;try{u=new URL(a.getAttribute("href"),base)}catch(_){return}if(!/^https?:$/.test(u.protocol))return;e.preventDefault();parent.postMessage({__funnyWispNav:u.href,tabId:'+JSON.stringify(tab.id)+'},"*")},true);document.addEventListener("submit",function(e){let f=e.target;if(!(f instanceof HTMLFormElement))return;let u;try{u=new URL(f.action||location.href,base)}catch(_){return}e.preventDefault();parent.postMessage({__funnyWispNav:u.href,tabId:'+JSON.stringify(tab.id)+'},"*")},true)})();<\/script>';
+  if(/<head[^>]*>/i.test(html))html=html.replace(/<head([^>]*)>/i,"<head$1>"+baseTag+bridge);else html=baseTag+bridge+html;
+  if(frame.dataset.objectUrl){URL.revokeObjectURL(frame.dataset.objectUrl);delete frame.dataset.objectUrl}
+  frame.removeAttribute("src");frame.srcdoc=html;
  }
- let html=await response.text();funnyCurrentUrl=response.url||target;
- const baseTag='<base href="'+escapeHTML(funnyCurrentUrl)+'">';
- const bridge='<script>(function(){const base=document.baseURI;document.addEventListener("click",function(e){let a=e.target.closest("a[href]");if(!a)return;let u;try{u=new URL(a.getAttribute("href"),base)}catch(_){return}if(!/^https?:$/.test(u.protocol))return;e.preventDefault();parent.postMessage({__funnyWispNav:u.href},"*")},true);document.addEventListener("submit",function(e){let f=e.target;if(!(f instanceof HTMLFormElement))return;let u;try{u=new URL(f.action||location.href,base)}catch(_){return}e.preventDefault();parent.postMessage({__funnyWispNav:u.href,method:(f.method||"GET").toUpperCase()},"*")},true);})();<\/script>';
- if(/<head[^>]*>/i.test(html))html=html.replace(/<head([^>]*)>/i,"<head$1>"+baseTag+bridge);else html=baseTag+bridge+html;
- let frame=$("#funnyPageFrame");if(!frame){frame=document.createElement("iframe");frame.id="funnyPageFrame";frame.style.cssText="position:absolute;inset:0;width:100%;height:100%;border:0;background:white;z-index:2";$("#stage").insertBefore(frame,$("#sidepanel"))}
- frame.style.display="block";frame.srcdoc=html;$("#home").style.display="none";$("#internalview").classList.remove("visible");
+ tab.loadedUrl=url;frame.dataset.loaded="1";frame.style.display="block";
 }
-window.addEventListener("message",e=>{if(e.data&&e.data.__funnyWispNav)navigate(e.data.__funnyWispNav)});
+window.addEventListener("message",e=>{
+ const d=e.data;if(!d||!d.__funnyWispNav)return;
+ const tab=tabs.find(t=>t.id===d.tabId)||activeTab();if(tab&&tab.id===activeId)navigate(d.__funnyWispNav);
+});
 
 function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -145,7 +176,9 @@ function normalize(value){
 }
 function activeTab(){return tabs.find(t=>t.id===activeId)}
 const BUILTIN_APPS=[
- {id:"interface-os",name:"Interf$ce OS",icon:"▦",description:"Interf$ce OS · whoisbro123.bonto.page",url:"https://whoisbro123.bonto.page",kind:"web"}
+ {id:"interface-os",name:"Interf$ce OS",icon:"▦",description:"Interf$ce OS · whoisbro123.bonto.page",url:"https://whoisbro123.bonto.page",kind:"web"},
+ {id:"aether",name:"Aether",icon:"✦",description:"Aether web app",url:"https://nyc3.digitaloceanspaces.com/jensenresigned/index.html",kind:"web"},
+ {id:"geeked",name:"Geeked",icon:"✧",description:"Geeked app catalog",url:"https://cdn.jsdelivr.net/gh/Humid-Mouse48/301010044444442831applesauce-queryw.dska@main/education.xml",kind:"web"}
 ];
 const EXTENSIONS=[
  {id:"compact-tabs",name:"Compact tabs",description:"Use a denser tab strip."},
@@ -159,12 +192,12 @@ function internalRoute(raw){
 }
 function setInternalContent(html){
  const box=$("#internalview");box.innerHTML=html;box.classList.add("visible");$("#home").style.display="none";
- if(gustEngineFrame)gustEngineFrame.style.display="none";const pf=$("#funnyPageFrame");if(pf)pf.style.display="none";
+ hideTabFrames();
 }
 function appIsInstalled(id){return (load("funny_installed_apps",[])||[]).includes(id)}
 function installApp(id){const a=load("funny_installed_apps",["lumin-demo"]);if(!a.includes(id))a.push(id);save("funny_installed_apps",a);toast("App installed")}
 function uninstallApp(id){save("funny_installed_apps",(load("funny_installed_apps",["lumin-demo"])||[]).filter(x=>x!==id));toast("App uninstalled")}
-function openInternalApp(id){const app=BUILTIN_APPS.find(x=>x.id===id);if(!app){toast("App not found");return}if(!appIsInstalled(id)){toast("Install this app first");return}const t=activeTab()||createTab();t.url="funny.py//apps/"+id;t.title=app.name;$("#address").value=t.url;renderTabs();$("#home").style.display="none";$("#internalview").classList.remove("visible");showProxiedPage(app.url).then(()=>log("Opened "+app.name+" through embedded WISP","load")).catch(e=>{toast("Could not open app: "+e.message);log("App launch error: "+e.message,"error")})}
+function openInternalApp(id){const app=BUILTIN_APPS.find(x=>x.id===id);if(!app){toast("App not found");return}if(!appIsInstalled(id)){toast("Install this app first");return}const t=activeTab()||createTab();t.url=app.url;t.title=app.name;t.history=t.history.slice(0,t.index+1);t.history.push(app.url);t.index=t.history.length-1;$("#address").value=app.url;renderTabs();$("#home").style.display="none";$("#internalview").classList.remove("visible");showProxiedPage(app.url,t,true).then(()=>log("Opened "+app.name+" through embedded WISP","load")).catch(e=>{toast("Could not open app: "+e.message);log("App launch error: "+e.message,"error")})}
 function renderAppStore(){
  const apps=BUILTIN_APPS.map(a=>'<article class="appcard"><div class="appicon">'+a.icon+'</div><strong>'+escapeHTML(a.name)+'</strong><p>'+escapeHTML(a.description)+'</p><button data-install="'+a.id+'">'+(appIsInstalled(a.id)?"Open":"Install")+'</button></article>').join("");
  setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Apps</h2><div class="internal-sub">Install an app, then open it inside a Funny.py tab.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appgrid">'+apps+'</div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//games\')">Games hub</button><button onclick="navigate(\'funny.py//extensions\')">Extensions hub</button><button onclick="navigate(\'funny.py//settings\')">Settings</button></div></div>');
@@ -208,7 +241,7 @@ function renderMusic(){
  const musicUrl="https://shore-cloud-28296.surge.sh/pages/music.html";
  const tab=activeTab();if(tab){tab.title="Funny.py Music";renderTabs()}
  log("Opening Funny.py Music through GUST WISP","navigation");
- showProxiedPage(musicUrl).then(()=>log("Funny.py Music opened","load")).catch(e=>{toast("Music could not open: "+e.message);log("Music error: "+e.message,"error")});
+ showProxiedPage(musicUrl,tab,true).then(()=>log("Funny.py Music opened","load")).catch(e=>{toast("Music could not open: "+e.message);log("Music error: "+e.message,"error")});
 }
 function renderInternal(route){
  const parts=route.split("/");const section=parts[0]||"home";
@@ -238,8 +271,9 @@ function applyPrivacyPreset(){
 function privacyEvent(){const cfg=load("funny_privacy",{enabled:false,preset:"midnight"});$("#privacyCover")?.classList.toggle("visible",!!cfg.enabled&&document.visibilityState==="hidden")}
 
 function createTab(url=null){
- const tab={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),url:null,title:"New Tab",history:[],index:-1,frame:null};
- tabs.push(tab);activeId=tab.id;tabs.forEach(x=>{if(x.frame){x.frame.style.display="none";x.frame.classList.remove("active")}});renderTabs();
+ const tab={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),url:null,title:"New Tab",history:[],index:-1,frame:null,navToken:0,loadedUrl:null};
+ tabs.push(tab);activeId=tab.id;hideTabFrames();renderTabs();closePanel();
+ $("#internalview").classList.remove("visible");$("#home").style.display="flex";$("#address").value="";
  if(url)navigate(url);else showHome();
  return tab;
 }
@@ -247,7 +281,7 @@ function renderTabs(){
  const root=$("#tabs");root.innerHTML="";
  tabs.forEach(t=>{
   const el=document.createElement("div");el.className="tab"+(t.id===activeId?" active":"");el.draggable=true;el.dataset.id=t.id;
-  el.innerHTML='<span style="color:#a78bfa">◉</span><span class="tabtitle"></span><button class="close" title="Close tab">×</button>';
+  el.innerHTML='<span style="color:#a78bfa">◉</span><span class="tabtitle"></span><button class="close" title="Close tab" aria-label="Close tab">×</button>';
   el.querySelector(".tabtitle").textContent=t.title;
   el.addEventListener("click",e=>{if(e.target.closest(".close"))return;switchTab(t.id)});
   el.querySelector(".close").addEventListener("click",e=>{e.stopPropagation();closeTab(t.id)});
@@ -258,12 +292,54 @@ function renderTabs(){
   root.appendChild(el);
  });
 }
-function switchTab(id){activeId=id;const t=activeTab();const route=t?.url?internalRoute(t.url):null;if(gustEngineFrame)gustEngineFrame.style.display="none";if(route!==null){renderInternal(route)}else if(t?.url){$("#internalview").classList.remove("visible");$("#home").style.display="none";showProxiedPage(t.url).catch(e=>{toast("WISP error: "+e.message);log("WISP error: "+e.message,"error")})}else{$("#internalview").classList.remove("visible");$("#home").style.display="flex"}$("#address").value=t?.url||"";renderTabs();closePanel()}
-function closeTab(id){const i=tabs.findIndex(t=>t.id===id);if(i<0)return;const wasActive=activeId===id;if(tabs[i].frame)tabs[i].frame.remove();tabs.splice(i,1);if(!tabs.length){createTab();return}if(wasActive){activeId=tabs[Math.max(0,i-1)].id;switchTab(activeId)}else renderTabs()}
-async function navigate(input,replace=false){const route=internalRoute(input);if(route!==null){const t=activeTab()||createTab();if(t.url&&!replace){t.history=t.history.slice(0,t.index+1);t.history.push(t.url);t.index++}t.url="funny.py//"+route;t.title="Funny.py · "+(route.split("/")[0]||"Home");if(gustEngineFrame)gustEngineFrame.style.display="none";$("#address").value=t.url;renderTabs();renderInternal(route);log("Opened internal route "+t.url);return}const url=normalize(input);if(!url)return;const t=activeTab()||createTab();try{if(t.url&&!replace){t.history=t.history.slice(0,t.index+1);t.history.push(t.url);t.index++}t.url=url;try{t.title=new URL(url).hostname}catch(e){t.title=url}$("#home").style.display="none";$("#address").value=url;$("#internalview").classList.remove("visible");renderTabs();log("Connecting through embedded WISP: "+url,"navigation");await showProxiedPage(url);log("WISP page loaded: "+url,"load");settings.history.unshift({url,title:t.title,time:Date.now()});settings.history=settings.history.slice(0,150);save("funny_settings",settings)}catch(e){console.error(e);toast("WISP navigation failed: "+e.message);log("WISP navigation error: "+e.message,"error")}}
-function showHome(){if(gustEngineFrame)gustEngineFrame.style.display="none";const t=activeTab();if(t){t.url=null;t.title="New Tab"}$("#internalview").classList.remove("visible");$("#home").style.display="flex";$("#address").value="";renderTabs()}
-function goBack(){const t=activeTab();if(!t)return;if(t.index>=0){const url=t.history[t.index];t.index--;navigate(url,true)}else if(gustEngineFrame){try{gustEngineFrame.contentWindow.document.getElementById("frame").contentWindow.history.back()}catch(e){}}}
-function goForward(){const t=activeTab();if(!t)return;if(t.index+1<t.history.length){const url=t.history[++t.index];navigate(url,true)}else if(gustEngineFrame){try{gustEngineFrame.contentWindow.document.getElementById("frame").contentWindow.history.forward()}catch(e){}}}
+function switchTab(id){
+ const t=tabs.find(x=>x.id===id);if(!t)return;
+ activeId=id;hideTabFrames(id);$("#address").value=t.url||"";renderTabs();closePanel();
+ if(internalRoute(t.url||"")!==null){$("#home").style.display="none";renderInternal(internalRoute(t.url));return}
+ if(t.url){$("#internalview").classList.remove("visible");$("#home").style.display="none";if(t.frame&&t.frame.dataset.loaded==="1")t.frame.style.display="block";else showProxiedPage(t.url,t).catch(e=>{toast("WISP error: "+e.message);log("WISP error: "+e.message,"error")})}
+ else{$("#internalview").classList.remove("visible");$("#home").style.display="flex"}
+}
+function closeTab(id){
+ const i=tabs.findIndex(t=>t.id===id);if(i<0)return;
+ const wasActive=activeId===id,closing=tabs[i];closing.navToken++;
+ if(closing.frame){if(closing.frame.dataset.objectUrl)URL.revokeObjectURL(closing.frame.dataset.objectUrl);closing.frame.remove()}
+ tabs.splice(i,1);
+ if(!tabs.length){activeId=null;createTab();return}
+ if(wasActive){const next=tabs[Math.min(i,tabs.length-1)];switchTab(next.id)}else renderTabs();
+}
+async function navigate(input,replace=false){
+ const route=internalRoute(input),url=route!==null?"funny.py//"+route:normalize(input);
+ if(!url)return;
+ const t=activeTab()||createTab();
+ if(!replace){
+  t.history=t.history.slice(0,t.index+1);t.history.push(url);t.index=t.history.length-1;
+ }
+ t.url=url;
+ try{t.title=route!==null?"Funny.py · "+(route.split("/")[0]||"Home"):new URL(url).hostname}catch(e){t.title=url}
+ $("#address").value=url;renderTabs();hideTabFrames();
+ if(route!==null){if(t.frame)t.frame.style.display="none";renderInternal(route);log("Opened internal route "+url);return}
+ $("#home").style.display="none";$("#internalview").classList.remove("visible");
+ log("Connecting through embedded WISP: "+url,"navigation");
+ try{
+  await showProxiedPage(url,t,true);
+  if(t.id===activeId){settings.history.unshift({url,title:t.title,time:Date.now()});settings.history=settings.history.slice(0,150);save("funny_settings",settings)}
+  log("WISP page loaded: "+url,"load");
+ }catch(e){if(t.id===activeId){toast("WISP navigation failed: "+e.message);log("WISP navigation error: "+e.message,"error")}}
+}
+function showHome(){
+ const t=activeTab();hideTabFrames();
+ if(t){t.url=null;t.title="New Tab";t.loadedUrl=null;t.navToken++}
+ $("#internalview").classList.remove("visible");$("#home").style.display="flex";$("#address").value="";renderTabs();
+}
+function goBack(){
+ const t=activeTab();if(!t||t.index<=0)return;
+ t.index--;const url=t.history[t.index];t.url=url;switchTab(t.id);showProxiedPage(url,t,true).catch(e=>toast("Back failed: "+e.message));
+}
+function goForward(){
+ const t=activeTab();if(!t||t.index>=t.history.length-1)return;
+ t.index++;const url=t.history[t.index];t.url=url;switchTab(t.id);showProxiedPage(url,t,true).catch(e=>toast("Forward failed: "+e.message));
+}
+
 function renderBookmarks(){
  $("#bookmarks").innerHTML="";settings.bookmarks.slice(0,9).forEach((b,i)=>{const btn=document.createElement("button");btn.className="bookmark";btn.textContent=b.title;btn.title=b.url;btn.onclick=()=>navigate(b.url);$("#bookmarks").appendChild(btn)});
 }
@@ -323,7 +399,7 @@ function stopInspector(){inspectMode=false;$("#inspectorHint").style.display="no
 function updateClock(){const d=new Date();$("#clock").textContent=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});$("#date").textContent=d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}
 $("#go").onclick=()=>navigate($("#address").value);$("#address").addEventListener("keydown",e=>{if(e.key==="Enter")navigate($("#address").value)});
 $("#homego").onclick=()=>navigate($("#homeaddress").value);$("#homeaddress").addEventListener("keydown",e=>{if(e.key==="Enter")navigate($("#homeaddress").value)});
-$("#newtab").onclick=()=>createTab();$("#back").onclick=goBack;$("#forward").onclick=goForward;$("#reload").onclick=()=>{const t=activeTab();if(t?.url&&!internalRoute(t.url))showProxiedPage(t.url).catch(e=>toast("Reload failed: "+e.message));else showHome()};$("#homebtn").onclick=showHome;
+$("#newtab").onclick=()=>createTab();$("#back").onclick=goBack;$("#forward").onclick=goForward;$("#reload").onclick=()=>{const t=activeTab();if(t?.url&&!internalRoute(t.url))showProxiedPage(t.url,t,true).catch(e=>toast("Reload failed: "+e.message));else if(t?.url&&internalRoute(t.url)!==null)renderInternal(internalRoute(t.url));else showHome()};$("#homebtn").onclick=showHome;
 $("#bookmarkCurrent").onclick=()=>{const t=activeTab();if(t?.url)addBookmark(t.url,t.title);else toast("Open a page to bookmark it")};
 $("#addBookmark").onclick=()=>{const t=activeTab();if(t?.url)addBookmark(t.url,t.title);else toast("Open a page first")};
 $("#panelclose").onclick=closePanel;document.querySelectorAll("[data-panel]").forEach(b=>b.onclick=()=>openPanel(b.dataset.panel));
