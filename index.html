@@ -50,6 +50,10 @@ h1{font-size:clamp(40px,6vw,64px);letter-spacing:-3px;margin:0;font-weight:800}.
 .metric{background:#20232d;border:1px solid #303441;border-radius:9px;padding:12px;margin-bottom:9px}.metric strong{font-size:21px;display:block}.metric span{color:#969bab;font-size:11px}
 #toast{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:#282b37;border:1px solid #45495a;border-radius:9px;padding:9px 14px;z-index:10;display:none;box-shadow:0 8px 30px #0008}
 #inspectorHint{display:none;position:absolute;bottom:0;left:0;right:0;padding:10px;background:#7656e8;color:white;text-align:center;z-index:3}
+
+#internalview{position:absolute;inset:0;display:none;overflow:auto;background:radial-gradient(ellipse at 50% 0,#24213a,#111218 65%);padding:28px}
+#internalview.visible{display:block}.internal-wrap{max-width:1050px;margin:0 auto}.internal-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.internal-top h2{font-size:27px;margin:0;letter-spacing:-1px}.internal-sub{color:#969bad;margin:7px 0 22px}.appgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:13px}.appcard{background:#1c1e29;border:1px solid #303342;border-radius:13px;padding:17px;min-height:150px;display:flex;flex-direction:column;align-items:flex-start;gap:9px}.appicon{width:43px;height:43px;border-radius:12px;background:#30294a;display:grid;place-items:center;font-size:22px}.appcard strong{font-size:14px}.appcard p{margin:0;color:#969bad;line-height:1.45;font-size:12px;flex:1}.appcard button{border:0;border-radius:8px;background:#7656e8;padding:8px 12px;font-weight:700}.appcard button.secondary{background:#2c2f3b;border:1px solid #414555}.internal-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.internal-toolbar button{border:1px solid #383b49;background:#242733;border-radius:8px;padding:8px 12px}.internal-toolbar button.selected{background:#7656e8}.internal-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:white}.privacy-cover{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#171923,#29223f);color:white}.privacy-cover.visible{display:flex}.privacy-cover .privacy-card{padding:36px 48px;border:1px solid #ffffff22;border-radius:20px;background:#11131acc;box-shadow:0 20px 80px #0009}.privacy-cover h2{font-size:30px;margin:0 0 8px}.privacy-cover p{color:#b8bbca;margin:0}.game-stage{background:#101116;border:1px solid #303342;border-radius:14px;padding:22px;max-width:680px;margin:22px auto;text-align:center}.game-score{font-size:50px;font-weight:800;margin:20px}.game-stage button{background:#7656e8;border:0;border-radius:10px;padding:12px 18px;font-weight:700}
+
 @media(max-width:620px){#favorites{grid-template-columns:repeat(2,1fr)}.tab{min-width:95px;max-width:145px}#bookmarkbar{overflow-x:auto}.navbuttons button{width:27px}#go{padding:8px 10px}.homeinner{padding-top:6vh}}
 </style>
 </head>
@@ -77,9 +81,11 @@ h1{font-size:clamp(40px,6vw,64px);letter-spacing:-3px;margin:0;font-weight:800}.
     <div id="homehint">Funny.py Browser · Powered by Ultraviolet</div>
    </div>
   </div>
+  <div id="internalview"></div>
   <div id="sidepanel"><div class="panelhead"><span id="paneltitle">Browser tools</span><button class="panelclose" id="panelclose">×</button></div><div class="panelbody" id="panelbody"></div></div>
   <div id="inspectorHint">Element picker active — click an element inside the page to inspect it. Press Esc to stop.</div>
   <div id="toast"></div>
+  <div id="privacyCover" class="privacy-cover"><div class="privacy-card"><h2>Funny.py</h2><p>Privacy screen · Return to this window to continue</p></div></div>
  </div>
 </div>
 <script>
@@ -101,6 +107,86 @@ function normalize(value){
 }
 function proxyUrl(url){if(!window.__uv$config)return null;return new URL(window.__uv$config.prefix,location.href).href+window.__uv$config.encodeUrl(url)}
 function activeTab(){return tabs.find(t=>t.id===activeId)}
+const BUILTIN_APPS=[
+ {id:"interface-os",name:"Interf$ce OS",icon:"▦",description:"Open Interf$ce OS in a Funny.py app tab.",url:"https://whoisbro123.bonto.page",kind:"web"},
+ {id:"lumin-demo",name:"Lumin SDK Demo",icon:"✦",description:"A tiny sample game built with the built-in Lumin-compatible SDK.",kind:"game"}
+];
+const EXTENSIONS=[
+ {id:"reader-mode",name:"Reader mode",description:"A local reading-view toggle for supported pages."},
+ {id:"compact-tabs",name:"Compact tabs",description:"Use a denser tab strip."},
+ {id:"newtab-clock",name:"New-tab clock",description:"Show the clock on the Funny.py start page."}
+];
+function internalRoute(raw){
+ const v=String(raw||"").trim().toLowerCase().replace(/^https?:\/\//,"");
+ if(!v.startsWith("funny.py//"))return null;
+ return v.slice("funny.py//".length).split(/[?#]/)[0]||"home";
+}
+function setInternalContent(html){
+ const box=$("#internalview");box.innerHTML=html;box.classList.add("visible");$("#home").style.display="none";
+ const t=activeTab();if(t?.frame)t.frame.style.display="none";$("#internalview").classList.remove("visible");
+}
+function appIsInstalled(id){return (load("funny_installed_apps",["lumin-demo"])||[]).includes(id)}
+function installApp(id){const a=load("funny_installed_apps",["lumin-demo"]);if(!a.includes(id))a.push(id);save("funny_installed_apps",a);toast("App installed")}
+function uninstallApp(id){save("funny_installed_apps",(load("funny_installed_apps",["lumin-demo"])||[]).filter(x=>x!==id));toast("App uninstalled")}
+function openInternalApp(id){
+ const app=BUILTIN_APPS.find(x=>x.id===id);if(!app){toast("App not found");return}
+ if(!appIsInstalled(id)){toast("Install this app first");return}
+ if(app.kind==="game"){navigate("funny.py//games/"+id);return}
+ const t=activeTab();if(!t)return;
+ const route="funny.py//apps/"+id;t.url=route;t.title=app.name;$("#address").value=route;renderTabs();
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>'+escapeHTML(app.name)+'</h2><div class="internal-sub">Running as a Funny.py app · '+escapeHTML(route)+'</div></div><button class="action" onclick="navigate(\\'funny.py//apps\\')">Back to apps</button></div><iframe class="internal-frame" id="appframe" allow="fullscreen; autoplay; clipboard-read; clipboard-write"></iframe></div>');
+ const frame=$("#appframe");const target=proxyUrl(app.url);
+ if(target){frame.src=target;log("Launching app "+app.name+" through Ultraviolet")}else{frame.src=app.url;log("Launching app "+app.name+" directly")}
+}
+function renderAppStore(){
+ const apps=BUILTIN_APPS.map(a=>'<article class="appcard"><div class="appicon">'+a.icon+'</div><strong>'+escapeHTML(a.name)+'</strong><p>'+escapeHTML(a.description)+'</p><button data-install="'+a.id+'">'+(appIsInstalled(a.id)?"Open":"Install")+'</button></article>').join("");
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Apps</h2><div class="internal-sub">Install apps before launching them. Installed apps are saved on this device.</div></div><button class="action" onclick="navigate(\\'funny.py//home\\')">Home</button></div><div class="appgrid">'+apps+'</div><div class="internal-toolbar"><button onclick="navigate(\\'funny.py//games\\')">Games</button><button onclick="navigate(\\'funny.py//extensions\\')">Extensions</button><button onclick="navigate(\\'funny.py//settings\\')">Settings</button></div></div>');
+ $("#internalview").querySelectorAll("[data-install]").forEach(b=>b.onclick=()=>{const id=b.dataset.install;if(appIsInstalled(id))openInternalApp(id);else{installApp(id);renderAppStore()}});
+}
+function renderGames(){
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Games</h2><div class="internal-sub">Games run inside Funny.py tabs using the built-in Lumin-compatible SDK.</div></div><button class="action" onclick="navigate(\\'funny.py//apps\\')">Apps</button></div><div class="appgrid"><article class="appcard"><div class="appicon">✦</div><strong>Lumin SDK Demo</strong><p>Sample clicker game to test the game runtime.</p><button id="launchDemo">'+(appIsInstalled("lumin-demo")?"Play":"Install & play")+'</button></article></div></div>');
+ $("#launchDemo").onclick=()=>{if(!appIsInstalled("lumin-demo"))installApp("lumin-demo");navigate("funny.py//games/lumin-demo")};
+}
+function renderGame(id){
+ if(id!=="lumin-demo"){setInternalContent('<div class="internal-wrap"><h2>Game not found</h2><button class="action" onclick="navigate(\\'funny.py//games\\')">Back</button></div>');return}
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Lumin SDK Demo</h2><div class="internal-sub">funny.py//games/lumin-demo</div></div><button class="action" onclick="navigate(\\'funny.py//games\\')">All games</button></div><div class="game-stage"><p>Tap to earn points</p><div class="game-score" id="score">0</div><button id="tapGame">+1 point</button><p style="color:#9da1b1">Example game using window.LuminSDK</p></div></div>');
+ let score=0;$("#tapGame").onclick=()=>{$("#score").textContent=String(++score);window.LuminSDK?.emit("score",score)};
+}
+function renderExtensions(){
+ const enabled=load("funny_extensions",[]);
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Extensions</h2><div class="internal-sub">Manage lightweight Funny.py interface extensions.</div></div><button class="action" onclick="navigate(\\'funny.py//settings\\')">Settings</button></div><div class="appgrid">'+EXTENSIONS.map(e=>'<article class="appcard"><div class="appicon">⌘</div><strong>'+e.name+'</strong><p>'+e.description+'</p><button class="extension-toggle" data-ext="'+e.id+'">'+(enabled.includes(e.id)?"Disable":"Enable")+'</button></article>').join("")+'</div></div>');
+ $("#internalview").querySelectorAll("[data-ext]").forEach(b=>b.onclick=()=>{const id=b.dataset.ext;let list=load("funny_extensions",[]);list=list.includes(id)?list.filter(x=>x!==id):[...list,id];save("funny_extensions",list);renderExtensions()});
+}
+function renderInternalSettings(){
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Funny.py Settings</h2><div class="internal-sub">Browser preferences and privacy controls.</div></div><button class="action" onclick="navigate(\\'funny.py//home\\')">Home</button></div><div class="appcard" style="max-width:650px"><strong>Privacy screen</strong><p>Show a neutral privacy screen when Funny.py loses focus. This does not imitate another website.</p><label><input id="privacyEnabled" type="checkbox"> Enable privacy screen</label><div class="field" style="width:100%;margin-top:12px"><label>Screen style</label><select id="privacyPreset"><option value="midnight">Midnight</option><option value="violet">Violet gradient</option><option value="plain">Plain dark</option></select></div><button class="primary" id="savePrivacy">Save privacy settings</button></div><div class="internal-toolbar"><button onclick="navigate(\\'funny.py//apps\\')">Apps</button><button onclick="navigate(\\'funny.py//games\\')">Games</button><button onclick="navigate(\\'funny.py//extensions\\')">Extensions</button></div></div>');
+ const cfg=load("funny_privacy",{enabled:false,preset:"midnight"});$("#privacyEnabled").checked=cfg.enabled;$("#privacyPreset").value=cfg.preset;
+ $("#savePrivacy").onclick=()=>{save("funny_privacy",{enabled:$("#privacyEnabled").checked,preset:$("#privacyPreset").value});applyPrivacyPreset();toast("Privacy settings saved")};
+}
+function renderInternal(route){
+ const parts=route.split("/");const section=parts[0]||"home";
+ if(section==="home"||section===""){showHome();$("#internalview").classList.remove("visible");return}
+ if(section==="settings")renderInternalSettings();
+ else if(section==="apps"&&parts[1])openInternalApp(parts[1]);
+ else if(section==="apps")renderAppStore();
+ else if(section==="games"&&parts[1])renderGame(parts[1]);
+ else if(section==="games")renderGames();
+ else if(section==="extensions")renderExtensions();
+ else setInternalContent('<div class="internal-wrap"><h2>Funny.py page not found</h2><p class="internal-sub">Try funny.py//settings, funny.py//apps, funny.py//games, or funny.py//extensions.</p><button class="action" onclick="navigate(\\'funny.py//home\\')">Home</button></div>');
+}
+window.LuminSDK={
+ version:"1.0-compatible",
+ registerGame(def){if(!def||!def.id||!def.name||typeof def.render!=="function")throw new Error("Game requires id, name and render()");const list=load("funny_custom_games",[]);const clean={id:String(def.id),name:String(def.name),description:String(def.description||""),icon:String(def.icon||"🎮")};const next=list.filter(x=>x.id!==clean.id);next.push(clean);save("funny_custom_games",next);window._funnyGameRender=window._funnyGameRender||{};window._funnyGameRender[clean.id]=def.render;return clean},
+ mount(node,html){if(typeof node==="string")node=document.querySelector(node);if(node)node.innerHTML=html},
+ toast,save:(key,value)=>save("lumin_"+key,value),load:(key,fallback)=>load("lumin_"+key,fallback),
+ navigate:url=>navigate(url),emit:(name,data)=>window.dispatchEvent(new CustomEvent("lumin:"+name,{detail:data}))
+};
+function applyPrivacyPreset(){
+ const cfg=load("funny_privacy",{enabled:false,preset:"midnight"});const cover=$("#privacyCover");if(!cover)return;
+ const styles={midnight:"linear-gradient(135deg,#12141d,#25213a)",violet:"linear-gradient(135deg,#33205c,#7656e8)",plain:"#111218"};
+ cover.style.background=styles[cfg.preset]||styles.midnight;
+}
+function privacyEvent(){const cfg=load("funny_privacy",{enabled:false,preset:"midnight"});$("#privacyCover")?.classList.toggle("visible",!!cfg.enabled&&document.visibilityState==="hidden")}
+
 function createTab(url=null){
  const tab={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),url:null,title:"New Tab",history:[],index:-1,frame:null};
  tabs.push(tab);activeId=tab.id;tabs.forEach(x=>{if(x.frame){x.frame.style.display="none";x.frame.classList.remove("active")}});renderTabs();
@@ -122,9 +208,10 @@ function renderTabs(){
   root.appendChild(el);
  });
 }
-function switchTab(id){activeId=id;tabs.forEach(t=>{if(t.frame)t.frame.classList.toggle("active",t.id===id)});const t=activeTab();$("#home").style.display=t&&t.url?"none":"flex";$("#address").value=t?.url||"";renderTabs();closePanel()}
+function switchTab(id){activeId=id;tabs.forEach(t=>{if(t.frame){t.frame.classList.toggle("active",t.id===id);t.frame.style.display=t.id===id?"block":"none"}});const t=activeTab();const route=t?.url?internalRoute(t.url):null;if(route!==null){renderInternal(route)}else if(t?.url){$("#internalview").classList.remove("visible");$("#home").style.display="none"}else{ $("#internalview").classList.remove("visible");$("#home").style.display="flex"}$("#address").value=t?.url||"";renderTabs();closePanel()}
 function closeTab(id){const i=tabs.findIndex(t=>t.id===id);if(i<0)return;const wasActive=activeId===id;if(tabs[i].frame)tabs[i].frame.remove();tabs.splice(i,1);if(!tabs.length){createTab();return}if(wasActive){activeId=tabs[Math.max(0,i-1)].id;switchTab(activeId)}else renderTabs()}
 async function navigate(input,replace=false){
+ const route=internalRoute(input);if(route!==null){const t=activeTab()||createTab();t.url='funny.py//'+route;t.title='Funny.py · '+(route.split('/')[0]||'Home');if(t.frame)t.frame.style.display='none';$('#address').value=t.url;renderTabs();renderInternal(route);log('Opened internal route '+t.url);return}
  const url=normalize(input);if(!url)return;
  const t=activeTab()||createTab();if(!window.__uv$config){toast("Proxy configuration did not load");log("Ultraviolet config missing","error");return}
  try{
@@ -137,7 +224,7 @@ async function navigate(input,replace=false){
   settings.history.unshift({url,title:t.title,time:Date.now()});settings.history=settings.history.slice(0,150);save("funny_settings",settings);
  }catch(e){console.error(e);toast("Proxy startup failed: "+e.message);log("Navigation error: "+e.message,"error")}
 }
-function showHome(){const t=activeTab();if(t?.frame)t.frame.style.display="none";$("#home").style.display="flex";$("#address").value=t?.url||""}
+function showHome(){const t=activeTab();if(t?.frame)t.frame.style.display="none";$("#internalview").classList.remove("visible");$("#home").style.display="flex";$("#address").value=t?.url||""}
 function goBack(){const t=activeTab();if(!t)return;if(t.index>=0){const url=t.history[t.index];t.index--;navigate(url,true)}else if(t.frame){try{t.frame.contentWindow.history.back()}catch(e){}}}
 function goForward(){const t=activeTab();if(!t)return;if(t.index+1<t.history.length){const url=t.history[++t.index];navigate(url,true)}else if(t.frame){try{t.frame.contentWindow.history.forward()}catch(e){}}}
 function renderBookmarks(){
@@ -192,7 +279,7 @@ $("#editFavorites").onclick=()=>{const raw=prompt("Enter favorite websites, one 
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&inspectMode)stopInspector();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="t"){e.preventDefault();createTab()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="w"){e.preventDefault();closeTab(activeId)}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="l"){e.preventDefault();$("#address").focus();$("#address").select()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"){e.preventDefault();$("#bookmarkCurrent").click()}if(e.altKey&&e.key==="ArrowLeft")goBack();if(e.altKey&&e.key==="ArrowRight")goForward()});
 window.addEventListener("error",e=>log("JavaScript: "+e.message,"error"));
 window.addEventListener("unhandledrejection",e=>log("Promise: "+String(e.reason),"error"));
-applySettings();updateClock();setInterval(updateClock,15000);createTab();
+applySettings();applyPrivacyPreset();document.addEventListener("visibilitychange",privacyEvent);window.addEventListener("blur",()=>{const cfg=load("funny_privacy",{enabled:false});if(cfg.enabled)$("#privacyCover").classList.add("visible")});window.addEventListener("focus",()=>$("#privacyCover").classList.remove("visible"));updateClock();setInterval(updateClock,15000);createTab();
 log("Funny.py browser started");
 </script>
 </body>
