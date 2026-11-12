@@ -1,188 +1,199 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101116">
 <title>Funny.py</title>
-<meta name="theme-color" content="#101014">
 <script src="./uv/uv.bundle.js"></script>
 <script src="./uv/uv.config.js"></script>
 <script src="./assets/register-sw.js"></script>
-
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  min-height:100vh;
-  background:#101014;
-  color:#f5f5f7;
-  font-family:Arial,Helvetica,sans-serif;
-  display:flex;
-  flex-direction:column;
-}
-header{
-  height:70px;
-  padding:0 34px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  border-bottom:1px solid #24242c;
-}
-.brand{font-size:23px;font-weight:800;letter-spacing:-1px}
-.brand span{color:#a78bfa}
-.status{font-size:12px;color:#999}
-main{
-  width:min(850px,92%);
-  margin:auto;
-  text-align:center;
-  padding:65px 0 100px;
-}
-.logo{
-  width:76px;height:76px;
-  margin:0 auto 22px;
-  border-radius:23px;
-  background:linear-gradient(135deg,#8b5cf6,#4f46e5);
-  display:grid;place-items:center;
-  font-size:35px;font-weight:900;
-  box-shadow:0 12px 55px #7953e755;
-}
-h1{font-size:clamp(38px,7vw,60px);margin:0 0 12px;letter-spacing:-2px}
-.subtitle{color:#9999a6;font-size:16px;margin-bottom:36px}
-.search{
-  width:100%;display:flex;align-items:center;
-  background:#1b1b23;border:1px solid #353541;
-  border-radius:16px;padding:7px;
-  box-shadow:0 15px 55px #0007;
-}
-.search:focus-within{border-color:#9b7bff;box-shadow:0 0 0 3px #8b5cf622}
-.search input{
-  flex:1;min-width:0;background:none;border:0;outline:0;
-  color:white;font-size:16px;padding:15px;
-}
-.search button{
-  border:0;border-radius:11px;padding:14px 22px;
-  background:#8b5cf6;color:white;font-weight:700;
-  cursor:pointer;font-size:14px;
-}
-.search button:hover{background:#a78bfa}
-.section-title{
-  text-align:left;color:#aaa;font-size:13px;
-  font-weight:700;text-transform:uppercase;
-  letter-spacing:1.4px;margin:43px 0 15px;
-}
-.favorites{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:13px;
-}
-.favorite{
-  border:1px solid #292934;background:#191920;
-  color:white;border-radius:14px;padding:19px 8px;
-  cursor:pointer;transition:.18s;
-}
-.favorite:hover{transform:translateY(-3px);border-color:#8b5cf6;background:#22212d}
-.favorite .emoji{font-size:25px;margin-bottom:10px}
-.favorite .name{font-size:13px;font-weight:600}
-.hint{color:#666;font-size:12px;margin-top:27px}
-footer{
-  padding:20px;text-align:center;color:#666;
-  font-size:12px;border-top:1px solid #24242c;
-}
-@media(max-width:550px){
-  header{padding:0 18px}
-  .favorites{grid-template-columns:repeat(2,1fr)}
-  .search button{padding:13px}
-}
+:root{color-scheme:dark;--bg:#101116;--panel:#181a22;--panel2:#20232d;--line:#2b2e3a;--text:#f4f4f7;--muted:#9297a8;--accent:#9b7cff;--accent2:#7656e8;--radius:13px}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font:13px Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit}button{color:inherit;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#app{height:100%;display:flex;flex-direction:column;background:var(--bg)}
+#chrome{background:#14151c;border-bottom:1px solid var(--line);z-index:5}
+#tabrow{height:43px;display:flex;align-items:center;gap:6px;padding:6px 9px 0;background:#101116}
+#tabs{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;height:100%}#tabs::-webkit-scrollbar{display:none}
+.tab{height:34px;min-width:120px;max-width:220px;flex:0 1 190px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#1a1c25;border:1px solid #292c37;border-bottom:0;border-radius:9px 9px 0 0;color:#aeb2c0;white-space:nowrap;overflow:hidden}
+.tab.active{background:#242631;color:white;border-color:#343746}.tab .tabtitle{overflow:hidden;text-overflow:ellipsis;flex:1;text-align:left}.tab .close{border:0;background:none;color:#85899a;padding:2px 4px;font-size:16px}.tab .close:hover{color:white}
+#newtab,.iconbtn{border:0;background:transparent;color:#aeb2c0;border-radius:8px;width:32px;height:30px;font-size:17px;display:grid;place-items:center;flex:none}#newtab:hover,.iconbtn:hover{background:#292c38;color:white}
+#toolbar{height:49px;display:flex;align-items:center;gap:7px;padding:6px 12px;background:#1a1c24}
+.navbuttons{display:flex;gap:2px}.navbuttons button{width:31px;height:31px;border:0;border-radius:8px;background:transparent;color:#aeb2c0;font-size:17px}.navbuttons button:hover{background:#2b2e3a;color:white}
+#addresswrap{height:35px;display:flex;align-items:center;gap:8px;flex:1;min-width:100px;background:#101116;border:1px solid #303340;border-radius:10px;padding:0 11px}
+#secure{color:#8d91a0}#address{width:100%;background:transparent;border:0;outline:0;color:white;font-size:13px;min-width:0}#address::placeholder{color:#73798a}
+#go{border:0;border-radius:8px;background:var(--accent2);padding:8px 14px;font-weight:700}#go:hover{background:var(--accent)}
+#bookmarkbar{height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#171921;border-top:1px solid #252833;overflow:hidden}
+.bookmark{border:0;background:transparent;color:#b9bdc9;border-radius:6px;padding:5px 9px;white-space:nowrap}.bookmark:hover{background:#2a2d39;color:white}.bookmark.add{margin-left:auto;color:#a78bfa}
+#stage{position:relative;flex:1;min-height:0;background:var(--bg)}
+.page{position:absolute;inset:0;width:100%;height:100%;border:0;background:white;display:none}.page.active{display:block}
+#home{position:absolute;inset:0;overflow:auto;background:radial-gradient(ellipse at 50% 18%,#25213a 0,#151621 42%,#101116 78%);display:flex;justify-content:center}
+.homeinner{width:min(920px,92%);padding:8vh 0 55px;text-align:center}
+.brandmark{height:68px;width:68px;margin:0 auto 17px;border-radius:21px;display:grid;place-items:center;background:linear-gradient(145deg,#b39aff,#6749d6);box-shadow:0 15px 55px #8d6cff55;font-size:34px;font-weight:900;color:white}
+h1{font-size:clamp(40px,6vw,64px);letter-spacing:-3px;margin:0;font-weight:800}.tagline{color:#9da1b1;margin:10px 0 30px;font-size:14px}
+#homesearch{height:53px;display:flex;align-items:center;gap:10px;background:#20222d;border:1px solid #393c4b;border-radius:15px;padding:6px 8px 6px 17px;box-shadow:0 15px 55px #0005}
+#homesearch input{flex:1;min-width:0;background:none;border:0;outline:0;color:white;font-size:15px}#homesearch button{height:39px;padding:0 20px;border:0;border-radius:10px;background:var(--accent2);font-weight:700}
+.homehead{display:flex;align-items:center;justify-content:space-between;margin:36px 0 13px;text-align:left;color:#aeb2c0;font-size:12px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
+#favorites{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.favorite{min-height:86px;border:1px solid #2e3140;background:#1b1d27;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;transition:.15s}
+.favorite:hover{transform:translateY(-2px);border-color:#8c70ef;background:#242432}.favicon{font-size:22px}.favname{font-size:12px;color:#d8d9e1;font-weight:600}
+#clock{font-size:clamp(28px,5vw,44px);font-weight:700;letter-spacing:-1px;margin-top:36px}#date{color:#8e93a4;margin-top:3px}
+#homehint{color:#686e7e;font-size:11px;margin-top:35px}
+#sidepanel{position:absolute;right:0;top:0;bottom:0;width:min(390px,92vw);background:#171922;border-left:1px solid var(--line);z-index:4;display:none;flex-direction:column;box-shadow:-15px 0 50px #0007}
+#sidepanel.open{display:flex}.panelhead{height:52px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);font-weight:750;font-size:14px}.panelbody{padding:15px;overflow:auto;flex:1}
+.panelclose{border:0;background:none;color:#9da1b1;font-size:20px}.field{margin-bottom:17px}.field label{display:block;color:#aeb2c0;font-size:12px;margin-bottom:7px}.field input,.field select{width:100%;height:36px;background:#101219;color:white;border:1px solid #343846;border-radius:8px;padding:0 10px}
+.action{border:1px solid #383b49;background:#242733;border-radius:8px;padding:8px 11px}.action:hover{border-color:var(--accent)}.primary{background:var(--accent2);border-color:var(--accent2)}
+.row{display:flex;align-items:center;gap:8px}.row>*{flex:1}
+.entry{padding:10px 8px;border-bottom:1px solid #292c36;display:flex;align-items:center;gap:9px}.entry small{display:block;color:#858a9b;margin-top:3px;overflow:hidden;text-overflow:ellipsis}.entry .entrymain{flex:1;min-width:0;overflow:hidden}.entry button{border:0;background:none;color:#aeb2c0}
+.log{font:11px ui-monospace,monospace;padding:8px;border-bottom:1px solid #292c36;color:#c5c8d2;overflow-wrap:anywhere}.log time{color:#8d72ef;margin-right:8px}
+.metric{background:#20232d;border:1px solid #303441;border-radius:9px;padding:12px;margin-bottom:9px}.metric strong{font-size:21px;display:block}.metric span{color:#969bab;font-size:11px}
+#toast{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:#282b37;border:1px solid #45495a;border-radius:9px;padding:9px 14px;z-index:10;display:none;box-shadow:0 8px 30px #0008}
+#inspectorHint{display:none;position:absolute;bottom:0;left:0;right:0;padding:10px;background:#7656e8;color:white;text-align:center;z-index:3}
+@media(max-width:620px){#favorites{grid-template-columns:repeat(2,1fr)}.tab{min-width:95px;max-width:145px}#bookmarkbar{overflow-x:auto}.navbuttons button{width:27px}#go{padding:8px 10px}.homeinner{padding-top:6vh}}
 </style>
 </head>
-
 <body>
-<header>
-  <div class="brand">Funny<span>.py</span></div>
-  <div class="status">● Your browser</div>
-</header>
-
-<main>
-  <div class="logo">F</div>
-  <h1>Funny.py</h1>
-  <p class="subtitle">A little corner of the internet.</p>
-
-  <div class="search">
-    <input id="address" type="text"
-      placeholder="Search the web or enter a URL..."
-      autocomplete="off">
-    <button onclick="browse()">Go ↗</button>
+<div id="app">
+ <div id="chrome">
+  <div id="tabrow"><div id="tabs"></div><button id="newtab" title="New tab">＋</button><button class="iconbtn" data-panel="history" title="History">◷</button><button class="iconbtn" data-panel="settings" title="Settings">⚙</button></div>
+  <div id="toolbar">
+   <div class="navbuttons"><button id="back" title="Back">‹</button><button id="forward" title="Forward">›</button><button id="reload" title="Reload">↻</button><button id="homebtn" title="Home">⌂</button></div>
+   <div id="addresswrap"><span id="secure">◈</span><input id="address" spellcheck="false" autocomplete="off" placeholder="Search or enter address"></div>
+   <button id="go">Go</button>
+   <button class="iconbtn" id="bookmarkCurrent" title="Bookmark this page">☆</button>
+   <button class="iconbtn" data-panel="tools" title="Browser tools">☷</button>
   </div>
-
-  <div class="section-title">Quick access</div>
-  <div class="favorites">
-    <button class="favorite" onclick="openSite('https://google.com')">
-      <div class="emoji">🔎</div><div class="name">Google</div>
-    </button>
-    <button class="favorite" onclick="openSite('https://youtube.com')">
-      <div class="emoji">▶️</div><div class="name">YouTube</div>
-    </button>
-    <button class="favorite" onclick="openSite('https://discord.com')">
-      <div class="emoji">💬</div><div class="name">Discord</div>
-    </button>
-    <button class="favorite" onclick="openSite('https://reddit.com')">
-      <div class="emoji">👾</div><div class="name">Reddit</div>
-    </button>
+  <div id="bookmarkbar"><span style="color:#73798a;font-size:11px">BOOKMARKS</span><div id="bookmarks" class="row" style="flex:1;overflow:hidden"></div><button class="bookmark add" id="addBookmark">＋ Add</button></div>
+ </div>
+ <div id="stage">
+  <div id="home">
+   <div class="homeinner">
+    <div class="brandmark">F</div><h1>Funny.py</h1><div class="tagline">Your window to the web.</div>
+    <div id="homesearch"><span style="color:#999">⌕</span><input id="homeaddress" placeholder="Search the web or enter a URL..." autocomplete="off"><button id="homego">Search ↗</button></div>
+    <div class="homehead"><span>Quick access</span><button class="action" id="editFavorites">Edit favorites</button></div>
+    <div id="favorites"></div>
+    <div id="clock">--:--</div><div id="date"></div>
+    <div id="homehint">Funny.py Browser · Powered by Ultraviolet</div>
+   </div>
   </div>
-
-  <p class="hint">Funny.py Browser · Powered by Ultraviolet</p>
-</main>
-
-<footer>Funny.py Browser</footer>
-
+  <div id="sidepanel"><div class="panelhead"><span id="paneltitle">Browser tools</span><button class="panelclose" id="panelclose">×</button></div><div class="panelbody" id="panelbody"></div></div>
+  <div id="inspectorHint">Element picker active — click an element inside the page to inspect it. Press Esc to stop.</div>
+  <div id="toast"></div>
+ </div>
+</div>
 <script>
-function formatSearch(value){
-  value=value.trim();
-  if(!value)return null;
-
-  try{
-    return new URL(value).href;
-  }catch(e){}
-
-  if(value.includes(".") && !value.includes(" ")){
-    try{return new URL("https://"+value).href}catch(e){}
-  }
-
-  return "https://www.google.com/search?q="+encodeURIComponent(value);
+"use strict";
+const $=s=>document.querySelector(s);
+const defaults={search:"https://www.google.com/search?q=",favorites:[["Google","🔎","https://google.com"],["YouTube","▶️","https://youtube.com"],["Discord","💬","https://discord.com"],["Reddit","👾","https://reddit.com"],["Wikipedia","📚","https://wikipedia.org"],["Twitch","🟣","https://twitch.tv"],["GitHub","🐙","https://github.com"],["DuckDuckGo","🦆","https://duckduckgo.com"]],bookmarks:[],history:[],wallpaper:"",font:13,adblock:false};
+let settings={...defaults,...load("funny_settings",{})};
+let tabs=[],activeId=null,logs=[],panel=null,inspectMode=false,dragTab=null;
+function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function log(message,type="info"){logs.unshift({time:new Date().toLocaleTimeString(),message,type});logs=logs.slice(0,200)}
+function toast(message){const el=$("#toast");el.textContent=message;el.style.display="block";clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.style.display="none",2200)}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function normalize(value){
+ value=String(value||"").trim();if(!value)return null;
+ try{return new URL(value).href}catch(e){}
+ if(value.includes(".")&&!value.includes(" "))return "https://"+value;
+ return settings.search+encodeURIComponent(value);
 }
-
-async function browse(value){
-  const input=document.getElementById("address");
-  const target=formatSearch(value || input.value);
-  if(!target)return;
-
-  if(!window.__uv$config){
-    alert("Funny.py could not load the Ultraviolet configuration.");
-    return;
-  }
-
-  try {
-    // Wait until the worker controlling /service/ has installed and activated.
-    if (window.funnyPyServiceWorkerReady) {
-      await window.funnyPyServiceWorkerReady;
-    } else if ("serviceWorker" in navigator) {
-      await navigator.serviceWorker.ready;
-    }
-
-    const prefix = new URL(window.__uv$config.prefix, location.href);
-    window.location.href = prefix.href + window.__uv$config.encodeUrl(target);
-  } catch (error) {
-    console.error("Funny.py could not start its proxy:", error);
-    alert("Funny.py could not start the proxy. Check the service worker registration and reload the page.");
-  }
+function proxyUrl(url){if(!window.__uv$config)return null;return new URL(window.__uv$config.prefix,location.href).href+window.__uv$config.encodeUrl(url)}
+function activeTab(){return tabs.find(t=>t.id===activeId)}
+function createTab(url=null){
+ const tab={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),url:null,title:"New Tab",history:[],index:-1,frame:null};
+ tabs.push(tab);activeId=tab.id;renderTabs();
+ if(url)navigate(url);else showHome();
+ return tab;
 }
-
-function openSite(url){
-  browse(url);
+function renderTabs(){
+ const root=$("#tabs");root.innerHTML="";
+ tabs.forEach(t=>{
+  const el=document.createElement("div");el.className="tab"+(t.id===activeId?" active":"");el.draggable=true;el.dataset.id=t.id;
+  el.innerHTML='<span style="color:#a78bfa">◉</span><span class="tabtitle"></span><button class="close" title="Close tab">×</button>';
+  el.querySelector(".tabtitle").textContent=t.title;
+  el.addEventListener("click",e=>{if(e.target.closest(".close"))return;switchTab(t.id)});
+  el.querySelector(".close").addEventListener("click",e=>{e.stopPropagation();closeTab(t.id)});
+  el.addEventListener("dragstart",()=>{dragTab=t.id;el.style.opacity=".5"});
+  el.addEventListener("dragend",()=>{dragTab=null;el.style.opacity="1"});
+  el.addEventListener("dragover",e=>e.preventDefault());
+  el.addEventListener("drop",e=>{e.preventDefault();const from=tabs.findIndex(x=>x.id===dragTab),to=tabs.findIndex(x=>x.id===t.id);if(from<0||to<0)return;const [m]=tabs.splice(from,1);tabs.splice(to,0,m);renderTabs()});
+  root.appendChild(el);
+ });
 }
-
-document.getElementById("address").addEventListener("keydown",function(e){
-  if(e.key==="Enter")browse();
-});
+function switchTab(id){activeId=id;tabs.forEach(t=>{if(t.frame)t.frame.classList.toggle("active",t.id===id)});const t=activeTab();$("#home").style.display=t&&t.url?"none":"flex";$("#address").value=t?.url||"";renderTabs();closePanel()}
+function closeTab(id){const i=tabs.findIndex(t=>t.id===id);if(i<0)return;const wasActive=activeId===id;if(tabs[i].frame)tabs[i].frame.remove();tabs.splice(i,1);if(!tabs.length){createTab();return}if(wasActive){activeId=tabs[Math.max(0,i-1)].id;switchTab(activeId)}else renderTabs()}
+async function navigate(input,replace=false){
+ const url=normalize(input);if(!url)return;
+ const t=activeTab()||createTab();if(!window.__uv$config){toast("Proxy configuration did not load");log("Ultraviolet config missing","error");return}
+ try{
+  if(window.funnyPyServiceWorkerReady)await window.funnyPyServiceWorkerReady;else if("serviceWorker"in navigator)await navigator.serviceWorker.ready;
+  const dest=proxyUrl(url);if(!dest)throw new Error("Proxy URL could not be created");
+  if(!t.frame){const frame=document.createElement("iframe");frame.className="page";frame.setAttribute("allow","fullscreen; autoplay; clipboard-read; clipboard-write");frame.referrerPolicy="no-referrer";$("#stage").appendChild(frame);t.frame=frame;frame.addEventListener("load",()=>{try{const title=frame.contentDocument.title;if(title){t.title=title;renderTabs()}}catch(e){}log("Page loaded: "+t.url,"load")})}
+  if(t.url&&!replace){t.history=t.history.slice(0,t.index+1);t.history.push(t.url);t.index++}
+  t.url=url;t.title=new URL(url).hostname;$("#home").style.display="none";$("#address").value=url;t.frame.style.display="block";tabs.forEach(x=>{if(x.frame)x.frame.classList.toggle("active",x.id===t.id)});
+  t.frame.src=dest;renderTabs();log("Navigating to "+url,"navigation");
+  settings.history.unshift({url,title:t.title,time:Date.now()});settings.history=settings.history.slice(0,150);save("funny_settings",settings);
+ }catch(e){console.error(e);toast("Proxy startup failed: "+e.message);log("Navigation error: "+e.message,"error")}
+}
+function showHome(){const t=activeTab();if(t?.frame)t.frame.style.display="none";$("#home").style.display="flex";$("#address").value=t?.url||""}
+function goBack(){const t=activeTab();if(!t)return;if(t.index>=0){const url=t.history[t.index];t.index--;navigate(url,true)}else if(t.frame){try{t.frame.contentWindow.history.back()}catch(e){}}}
+function goForward(){const t=activeTab();if(!t)return;if(t.index+1<t.history.length){const url=t.history[++t.index];navigate(url,true)}else if(t.frame){try{t.frame.contentWindow.history.forward()}catch(e){}}}
+function renderBookmarks(){
+ $("#bookmarks").innerHTML="";settings.bookmarks.slice(0,9).forEach((b,i)=>{const btn=document.createElement("button");btn.className="bookmark";btn.textContent=b.title;btn.title=b.url;btn.onclick=()=>navigate(b.url);$("#bookmarks").appendChild(btn)});
+}
+function addBookmark(url,title){if(!url)return;if(settings.bookmarks.some(b=>b.url===url)){toast("Already bookmarked");return}settings.bookmarks.push({url,title:title||new URL(url).hostname});save("funny_settings",settings);renderBookmarks();toast("Bookmark saved")}
+function renderFavorites(){
+ $("#favorites").innerHTML="";settings.favorites.forEach(([name,icon,url])=>{const b=document.createElement("button");b.className="favorite";b.innerHTML='<span class="favicon"></span><span class="favname"></span>';b.querySelector(".favicon").textContent=icon;b.querySelector(".favname").textContent=name;b.onclick=()=>navigate(url);$("#favorites").appendChild(b)});
+}
+function openPanel(which){panel=which;$("#sidepanel").classList.add("open");const title={settings:"Settings",history:"History",bookmarks:"Bookmarks",tools:"Developer tools",downloads:"Downloads"}[which]||"Browser tools";$("#paneltitle").textContent=title;const body=$("#panelbody");
+ if(which==="settings"){
+ body.innerHTML='<div class="field"><label>Search engine</label><select id="searchEngine"><option value="https://www.google.com/search?q=">Google</option><option value="https://search.brave.com/search?q=">Brave</option><option value="https://duckduckgo.com/?q=">DuckDuckGo</option><option value="https://www.bing.com/search?q=">Bing</option></select></div><div class="field"><label>New-tab wallpaper image URL</label><input id="wallpaper" placeholder="https://example.com/wallpaper.jpg"></div><div class="field"><label>New-tab font size</label><input id="fontsize" type="range" min="12" max="18" value="'+settings.font+'"></div><div class="field"><label><input id="adblock" type="checkbox" '+(settings.adblock?"checked":"")+'> Enable cosmetic ad-block styling (new-tab UI only)</label></div><button class="action primary" id="saveSettings">Save settings</button><p style="color:#8e93a4;line-height:1.5;margin-top:18px">Funny.py currently uses the Ultraviolet proxy engine and its configured Bare endpoint. GUST's libcurl.js/WISP engine is a separate network stack and is not enabled by these interface settings.</p>';
+ $("#searchEngine").value=settings.search;$("#wallpaper").value=settings.wallpaper||"";
+ $("#saveSettings").onclick=()=>{settings.search=$("#searchEngine").value;settings.wallpaper=$("#wallpaper").value.trim();settings.font=Number($("#fontsize").value);settings.adblock=$("#adblock").checked;save("funny_settings",settings);applySettings();toast("Settings saved")};
+ }else if(which==="history"){
+ body.innerHTML='<div class="row"><button class="action" id="clearHistory">Clear history</button></div><div id="historyList"></div>';
+ $("#historyList").innerHTML=settings.history.map(h=>'<div class="entry"><span>◷</span><div class="entrymain"><div>'+escapeHTML(h.title||h.url)+'</div><small>'+escapeHTML(h.url)+'</small></div><button data-url="'+encodeURIComponent(h.url)+'">↗</button></div>').join("");
+ $("#historyList").querySelectorAll("button").forEach(b=>b.onclick=()=>navigate(decodeURIComponent(b.dataset.url)));
+ $("#clearHistory").onclick=()=>{settings.history=[];save("funny_settings",settings);openPanel("history")};
+ }else if(which==="bookmarks"){
+ body.innerHTML=settings.bookmarks.length?settings.bookmarks.map((b,i)=>'<div class="entry"><span>☆</span><div class="entrymain"><div>'+escapeHTML(b.title)+'</div><small>'+escapeHTML(b.url)+'</small></div><button data-open="'+i+'">↗</button><button data-remove="'+i+'">×</button></div>').join(""):"<p style='color:#9297a8'>No bookmarks yet. Use the ☆ button in the address bar to save a page.</p>";
+ body.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>navigate(settings.bookmarks[+b.dataset.open].url));body.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{settings.bookmarks.splice(+b.dataset.remove,1);save("funny_settings",settings);renderBookmarks();openPanel("bookmarks")});
+ }else if(which==="tools"){
+ body.innerHTML='<div class="metric"><strong>'+tabs.length+'</strong><span>Open tabs</span></div><div class="metric"><strong>'+logs.length+'</strong><span>Browser events recorded</span></div><div class="metric"><strong id="heap">—</strong><span>JS heap used (when supported)</span></div><div class="row"><button class="action" id="showLogs">Request / navigation log</button><button class="action" id="inspect">Inspect page elements</button></div><div class="row" style="margin-top:8px"><button class="action" id="metricsRefresh">Refresh metrics</button><button class="action" id="clearLogs">Clear logs</button></div><div id="loglist" style="margin-top:12px"></div>';
+ const mem=performance.memory;$("#heap").textContent=mem?(mem.usedJSHeapSize/1048576).toFixed(1)+" MB":"Unavailable";
+ $("#showLogs").onclick=()=>renderLogs();$("#metricsRefresh").onclick=()=>openPanel("tools");$("#clearLogs").onclick=()=>{logs=[];renderLogs()};$("#inspect").onclick=()=>startInspector();
+ }else if(which==="downloads"){
+ body.innerHTML="<p style='color:#9297a8'>Downloads started inside proxied pages depend on the target site and browser permissions. Your browser's normal downloads list remains available through the browser menu.</p>";
+ }
+}
+function renderLogs(){const list=$("#loglist");if(!list)return;list.innerHTML=logs.map(l=>'<div class="log"><time>'+escapeHTML(l.time)+'</time>'+escapeHTML(l.message)+'</div>').join("")||"<p style='color:#9297a8'>No events yet.</p>"}
+function closePanel(){panel=null;$("#sidepanel").classList.remove("open")}
+function applySettings(){document.documentElement.style.setProperty("--font-size",settings.font+"px");if(settings.wallpaper){$("#home").style.background="linear-gradient(#10111699,#101116bb),url('"+settings.wallpaper.replace(/'/g,"%27")+"') center/cover fixed"}else{$("#home").style.background="radial-gradient(ellipse at 50% 18%,#25213a 0,#151621 42%,#101116 78%)"}renderFavorites();renderBookmarks()}
+function startInspector(){
+ const t=activeTab();if(!t?.frame){toast("Open a page first");return}
+ try{
+  const doc=t.frame.contentDocument;if(!doc)throw new Error("Page is not accessible");
+  inspectMode=true;$("#inspectorHint").style.display="block";closePanel();
+  const handler=e=>{if(!inspectMode)return;e.preventDefault();e.stopPropagation();const el=e.target;el.style.outline="2px solid #9b7cff";const info={tag:el.tagName.toLowerCase(),id:el.id||"(none)",classes:el.className?.toString?.()||"(none)",text:(el.textContent||"").trim().slice(0,180)};openPanel("tools");$("#loglist").innerHTML='<div class="metric"><strong>'+escapeHTML(info.tag)+'</strong><span>Selected element</span></div><div class="log">ID: '+escapeHTML(info.id)+'</div><div class="log">Classes: '+escapeHTML(info.classes)+'</div><div class="log">Text: '+escapeHTML(info.text)+'</div>';stopInspector();};
+  doc.addEventListener("click",handler,true);window._funnyInspector={doc,handler};toast("Click an element inside the page");
+ }catch(e){toast("Inspector unavailable for this page");log("Inspector error: "+e.message,"error")}
+}
+function stopInspector(){inspectMode=false;$("#inspectorHint").style.display="none";if(window._funnyInspector){window._funnyInspector.doc.removeEventListener("click",window._funnyInspector.handler,true);window._funnyInspector=null}}
+function updateClock(){const d=new Date();$("#clock").textContent=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});$("#date").textContent=d.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}
+$("#go").onclick=()=>navigate($("#address").value);$("#address").addEventListener("keydown",e=>{if(e.key==="Enter")navigate($("#address").value)});
+$("#homego").onclick=()=>navigate($("#homeaddress").value);$("#homeaddress").addEventListener("keydown",e=>{if(e.key==="Enter")navigate($("#homeaddress").value)});
+$("#newtab").onclick=()=>createTab();$("#back").onclick=goBack;$("#forward").onclick=goForward;$("#reload").onclick=()=>{const t=activeTab();if(t?.frame)t.frame.contentWindow.location.reload();else showHome()};$("#homebtn").onclick=showHome;
+$("#bookmarkCurrent").onclick=()=>{const t=activeTab();if(t?.url)addBookmark(t.url,t.title);else toast("Open a page to bookmark it")};
+$("#addBookmark").onclick=()=>{const t=activeTab();if(t?.url)addBookmark(t.url,t.title);else toast("Open a page first")};
+$("#panelclose").onclick=closePanel;document.querySelectorAll("[data-panel]").forEach(b=>b.onclick=()=>openPanel(b.dataset.panel));
+$("#editFavorites").onclick=()=>{const raw=prompt("Enter favorite websites, one per line, as Name | URL",settings.favorites.map(f=>f[0]+" | "+f[2]).join("\n"));if(raw===null)return;const list=raw.split("\n").map(line=>{const p=line.split("|").map(x=>x.trim());if(p.length<2||!p[1])return null;return [p[0]||"Website","🌐",normalize(p.slice(1).join("|"))]}).filter(Boolean);settings.favorites=list;save("funny_settings",settings);renderFavorites()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&inspectMode)stopInspector();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="t"){e.preventDefault();createTab()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="w"){e.preventDefault();closeTab(activeId)}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="l"){e.preventDefault();$("#address").focus();$("#address").select()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"){e.preventDefault();$("#bookmarkCurrent").click()}if(e.altKey&&e.key==="ArrowLeft")goBack();if(e.altKey&&e.key==="ArrowRight")goForward()});
+window.addEventListener("error",e=>log("JavaScript: "+e.message,"error"));
+window.addEventListener("unhandledrejection",e=>log("Promise: "+String(e.reason),"error"));
+applySettings();updateClock();setInterval(updateClock,15000);createTab();
+log("Funny.py browser started");
 </script>
 </body>
 </html>
