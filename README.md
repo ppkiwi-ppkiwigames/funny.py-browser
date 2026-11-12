@@ -4,13 +4,15 @@ Funny.py is a browser-style frontend powered by Ultraviolet.
 
 ## Hosting
 
+The browser includes internal pages such as `funny.py//settings`, `funny.py//apps`, `funny.py//games`, and `funny.py//extensions`. The Apps page includes an installable Interf$ce OS launcher. A built-in Lumin-compatible game SDK is exposed as `window.LuminSDK`.
+
 This repository is configured for the GitHub Pages project site:
 
 `https://ppkiwi-ppkiwigames.github.io/funny.py-browser/`
 
 In GitHub, open **Settings → Pages** and select **Deploy from a branch**, branch **main**, folder **/(root)**.
 
-The Ultraviolet service worker is located at `service/uv-sw.js`. It must remain inside the `service/` directory because its scope is `/funny.py-browser/service/`. Moving it to the repository root can cause the browser to reject registration on GitHub Pages.
+The Ultraviolet service worker is `uv-sw.js` at the repository root and is registered with the `/funny.py-browser/` scope. This is required so it can control the browser page and intercept proxy requests under `/service/`. The older `service/uv-sw.js` file is retained for compatibility but is not the active worker.
 
 ## Bare server requirement
 
