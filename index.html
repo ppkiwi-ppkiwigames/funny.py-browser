@@ -212,11 +212,11 @@ function openInternalApp(id){
 }
 function renderAppStore(){
  const apps=BUILTIN_APPS.map(a=>'<article class="appcard"><div class="appicon">'+a.icon+'</div><strong>'+escapeHTML(a.name)+'</strong><p>'+escapeHTML(a.description)+'</p><button data-install="'+a.id+'">'+(appIsInstalled(a.id)?"Open":"Install")+'</button></article>').join("");
- setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Apps</h2><div class="internal-sub">Install an app, then open it inside a Funny.py tab.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appgrid">'+apps+'</div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//games\')">Games hub</button><button onclick="navigate(\'funny.py//extensions\')">Extensions hub</button><button onclick="navigate(\'funny.py//settings\')">Settings</button></div></div>');
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Apps</h2><div class="internal-sub">Install an app, then open it inside a Funny.py tab.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appgrid">'+apps+'</div></div>');
  $("#internalview").querySelectorAll("[data-install]").forEach(b=>b.onclick=()=>{const id=b.dataset.install;if(appIsInstalled(id))openInternalApp(id);else{installApp(id);renderAppStore()}});
 }
 function renderGames(){
- setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Games</h2><div class="internal-sub">Powered by the official LuminSDK game catalog.</div></div><button class="action" onclick="navigate(\'funny.py//apps\')">Apps</button></div><div id="luminStatus" class="internal-sub">Loading LuminSDK game library…</div><div id="luminGames" style="min-height:420px;background:#101116;border-radius:14px;padding:12px"></div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//extensions\')">Extensions</button><button onclick="navigate(\'funny.py//settings\')">Settings</button></div></div>');
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Games</h2><div class="internal-sub">Powered by the official LuminSDK game catalog.</div></div></div><div id="luminStatus" class="internal-sub">Loading LuminSDK game library…</div><div id="luminGames" style="min-height:420px;background:#101116;border-radius:14px;padding:12px"></div></div>');
  loadLuminSDK();
 }
 function loadLuminSDK(){
@@ -235,7 +235,7 @@ function renderGame(id){
 }
 function renderExtensions(){
  const enabled=load("funny_extensions",[]);
- setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Extensions</h2><div class="internal-sub">Manage lightweight Funny.py interface extensions.</div></div><button class="action" onclick="navigate(\'funny.py//settings\')">Settings</button></div><div class="appgrid">'+EXTENSIONS.map(e=>'<article class="appcard"><div class="appicon">⌘</div><strong>'+e.name+'</strong><p>'+e.description+'</p><button class="extension-toggle" data-ext="'+e.id+'">'+(enabled.includes(e.id)?"Disable":"Enable")+'</button></article>').join("")+'</div></div>');
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Extensions</h2><div class="internal-sub">Manage lightweight Funny.py interface extensions.</div></div></div><div class="appgrid">'+EXTENSIONS.map(e=>'<article class="appcard"><div class="appicon">⌘</div><strong>'+e.name+'</strong><p>'+e.description+'</p><button class="extension-toggle" data-ext="'+e.id+'">'+(enabled.includes(e.id)?"Disable":"Enable")+'</button></article>').join("")+'</div></div>');
  $("#internalview").querySelectorAll("[data-ext]").forEach(b=>b.onclick=()=>{const id=b.dataset.ext;let list=load("funny_extensions",[]);list=list.includes(id)?list.filter(x=>x!==id):[...list,id];save("funny_extensions",list);applyExtensions();renderExtensions()});
 }
 function renderInternalSettings(){
@@ -250,23 +250,11 @@ function renderInternalSettings(){
  $("#savePrivacy").onclick=()=>{save("funny_privacy",{enabled:$("#privacyEnabled").checked,preset:$("#privacyPreset").value});applyPrivacyPreset();toast("Privacy settings saved")};
 }
 function renderMusic(){
+ const staleBar=$("#musicFallbackBar");if(staleBar)staleBar.remove();
  const musicUrl="https://shore-cloud-28296.surge.sh/pages/music.html";
  const tab=activeTab();if(!tab)return;
  tab.title="Funny.py Music";tab.contentUrl=musicUrl;renderTabs();
  $("#address").value="funny.py//music";
- let bar=$("#musicFallbackBar");
- if(!bar){
-  bar=document.createElement("div");bar.id="musicFallbackBar";
-  bar.style.cssText="position:absolute;z-index:8;right:16px;bottom:16px;padding:9px 12px;border:1px solid #51466f;border-radius:12px;background:#1b1a27;color:#fff;font:12px system-ui;box-shadow:0 5px 24px #0008";
-  bar.innerHTML='<span>Music blank?</span> <button id="musicDirectFallback" style="margin-left:8px;padding:6px 9px;border:0;border-radius:7px;background:#9477ed;color:white;cursor:pointer">Open embedded version</button>';
-  $("#stage").appendChild(bar);
- }
- bar.style.display="block";
- $("#musicDirectFallback").onclick=()=>{
-  const frame=getTabFrame(tab);hideTabFrames(tab.id);$("#internalview").classList.remove("visible");$("#home").style.display="none";
-  frame.setAttribute("sandbox","allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals");
-  frame.src=musicUrl;frame.style.display="block";tab.loadedUrl="direct:"+musicUrl;tab.contentUrl=musicUrl;
- };
  log("Opening Funny.py Music through embedded WISP","navigation");
  showProxiedPage(musicUrl,tab,true).then(()=>log("Funny.py Music opened","load")).catch(e=>{
   if(tab.id===activeId)toast("Music WISP load failed: "+e.message);
@@ -277,6 +265,7 @@ function renderInternal(route){
  const parts=route.split("/");const section=parts[0]||"home";
  if(section==="home"||section===""){showHome();$("#internalview").classList.remove("visible");return}
  if(section==="settings")renderInternalSettings();
+ else if(section==="chat"){const tab=activeTab();if(tab){tab.title="Funny.py Chat";renderTabs();$("#address").value="funny.py//chat";showProxiedPage("https://padlet.com/sha8319399/trustmetwin",tab,true).catch(e=>toast("Chat WISP load failed: "+e.message))}}
  else if(section==="apps"&&parts[1])openInternalApp(parts[1]);
  else if(section==="apps")renderAppStore();
  else if(section==="games"&&parts[1])renderGame(parts[1]);
@@ -392,7 +381,7 @@ function renderFavorites(){
   b.onclick=()=>navigate(item.url);root.appendChild(b);
  });
 }
-function openPanel(which){panel=which;$("#sidepanel").classList.add("open");const title={settings:"Settings",history:"History",bookmarks:"Bookmarks",tools:"Developer tools",downloads:"Downloads"}[which]||"Browser tools";$("#paneltitle").textContent=title;const body=$("#panelbody");
+function openPanel(which){if(which==="settings"){closePanel();navigate("funny.py//settings");return}panel=which;$("#sidepanel").classList.add("open");const title={settings:"Settings",history:"History",bookmarks:"Bookmarks",tools:"Developer tools",downloads:"Downloads"}[which]||"Browser tools";$("#paneltitle").textContent=title;const body=$("#panelbody");
  if(which==="settings"){
  body.innerHTML='<div class="field"><label>Search engine</label><select id="searchEngine"><option value="https://www.google.com/search?q=">Google</option><option value="https://search.brave.com/search?q=">Brave</option><option value="https://duckduckgo.com/?q=">DuckDuckGo</option><option value="https://www.bing.com/search?q=">Bing</option></select></div><div class="field"><label>New-tab wallpaper image URL</label><input id="wallpaper" placeholder="https://example.com/wallpaper.jpg"></div><div class="field"><label>New-tab font size</label><input id="fontsize" type="range" min="12" max="18" value="'+settings.font+'"></div><div class="field"><label><input id="adblock" type="checkbox" '+(settings.adblock?"checked":"")+'> Enable cosmetic ad-block styling (new-tab UI only)</label></div><button class="action primary" id="saveSettings">Save settings</button><p style="color:#8e93a4;line-height:1.5;margin-top:18px">Funny.py uses its embedded WISP transport. No GUST browser interface or visual assets are included.</p>';
  $("#searchEngine").value=settings.search;$("#wallpaper").value=settings.wallpaper||"";
