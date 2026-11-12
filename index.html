@@ -1,69 +1,177 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="./assets/ultraviolet.png" type="image/png">
-  <title>Ultraviolet</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funny.py</title>
+<meta name="theme-color" content="#101014">
+<script src="./uv/uv.bundle.js"></script>
+<script src="./uv/uv.config.js"></script>
+<script src="./assets/register-sw.js"></script>
 
-  <!-- Meta tags for SEO -->
-  <meta property="og:title" content="Ultraviolet">
-  <meta property="og:description"
-    content="Ultraviolet is a web proxy for unblocking websites using service workers and interception." />
-  <meta property="og:image" content="/assets/ultraviolet.png" />
-  <meta name="theme-color" content="#262262" />
-
-  <!-- Styles and fonts -->
-  <link rel="stylesheet" href="./assets/style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
-    rel="stylesheet">
-
-  <!-- Scripts -->
-  <script src="./uv/uv.bundle.js"></script>
-  <script src="./uv/uv.config.js"></script>
-  <script src="./assets/register-sw.js"></script>
-
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:#101014;
+  color:#f5f5f7;
+  font-family:Arial,Helvetica,sans-serif;
+  display:flex;
+  flex-direction:column;
+}
+header{
+  height:70px;
+  padding:0 34px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid #24242c;
+}
+.brand{font-size:23px;font-weight:800;letter-spacing:-1px}
+.brand span{color:#a78bfa}
+.status{font-size:12px;color:#999}
+main{
+  width:min(850px,92%);
+  margin:auto;
+  text-align:center;
+  padding:65px 0 100px;
+}
+.logo{
+  width:76px;height:76px;
+  margin:0 auto 22px;
+  border-radius:23px;
+  background:linear-gradient(135deg,#8b5cf6,#4f46e5);
+  display:grid;place-items:center;
+  font-size:35px;font-weight:900;
+  box-shadow:0 12px 55px #7953e755;
+}
+h1{font-size:clamp(38px,7vw, sixty);font-size:clamp(38px,7vw,60px);margin:0 0 12px;letter-spacing:-2px}
+.subtitle{color:#9999a6;font-size:16px;margin-bottom:36px}
+.search{
+  width:100%;display:flex;align-items:center;
+  background:#1b1b23;border:1px solid #353541;
+  border-radius:16px;padding:7px;
+  box-shadow:0 15px 55px #0007;
+}
+.search:focus-within{border-color:#9b7bff;box-shadow:0 0 0 3px #8b5cf622}
+.search input{
+  flex:1;min-width:0;background:none;border:0;outline:0;
+  color:white;font-size:16px;padding:15px;
+}
+.search button{
+  border:0;border-radius:11px;padding:14px 22px;
+  background:#8b5cf6;color:white;font-weight:700;
+  cursor:pointer;font-size:14px;
+}
+.search button:hover{background:#a78bfa}
+.section-title{
+  text-align:left;color:#aaa;font-size:13px;
+  font-weight:700;text-transform:uppercase;
+  letter-spacing:1.4px;margin:43px 0 15px;
+}
+.favorites{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:13px;
+}
+.favorite{
+  border:1px solid #292934;background:#191920;
+  color:white;border-radius:14px;padding:19px 8px;
+  cursor:pointer;transition:.18s;
+}
+.favorite:hover{transform:translateY(-3px);border-color:#8b5cf6;background:#22212d}
+.favorite .emoji{font-size:25px;margin-bottom:10px}
+.favorite .name{font-size:13px;font-weight:600}
+.hint{color:#666;font-size:12px;margin-top:27px}
+footer{
+  padding:20px;text-align:center;color:#666;
+  font-size:12px;border-top:1px solid #24242c;
+}
+@media(max-width:550px){
+  header{padding:0 18px}
+  .favorites{grid-template-columns:repeat(2,1fr)}
+  .search button{padding:13px}
+}
+</style>
 </head>
 
 <body>
-  <div class="container">
-    <h1 class="header">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-        <path d="M20 22h-2" />
-        <path d="M20 15v2h-2" />
-        <path d="M4 19.5V15" />
-        <path d="M20 8v3" />
-        <path d="M18 2h2v2" />
-        <path d="M4 11V9" />
-        <path d="M12 2h2" />
-        <path d="M12 22h2" />
-        <path d="M12 17h2" />
-        <path d="M8 22H6.5a2.5 2.5 0 0 1 0-5H8" />
-        <path d="M4 5v-.5A2.5 2.5 0 0 1 6.5 2H8" />
-      </svg>
-      Ultraviolet Template
-    </h1>
-    <p class="description">A template for creating your own Ultraviolet proxy</p>
-    <input type="text" class="input" placeholder="Enter a search query or URL">
+<header>
+  <div class="brand">Funny<span>.py</span></div>
+  <div class="status">● Your browser</div>
+</header>
+
+<main>
+  <div class="logo">F</div>
+  <h1>Funny.py</h1>
+  <p class="subtitle">A little corner of the internet.</p>
+
+  <div class="search">
+    <input id="address" type="text"
+      placeholder="Search the web or enter a URL..."
+      autocomplete="off">
+    <button onclick="browse()">Go ↗</button>
   </div>
 
-  <div class="footer">
-    <div>
-      <img src="./assets/ultraviolet.png" class="logo">
-    </div>
-
-    <div>
-      <a href="https://github.com/proudparrot2/ultraviolet" target="_blank">GitHub</a>
-      <a href="https://github.com/titaniumnetwork-dev/ultraviolet" target="_blank">Ultraviolet</a>
-    </div>
+  <div class="section-title">Quick access</div>
+  <div class="favorites">
+    <button class="favorite" onclick="openSite('https://google.com')">
+      <div class="emoji">🔎</div><div class="name">Google</div>
+    </button>
+    <button class="favorite" onclick="openSite('https://youtube.com')">
+      <div class="emoji">▶️</div><div class="name">YouTube</div>
+    </button>
+    <button class="favorite" onclick="openSite('https://discord.com')">
+      <div class="emoji">💬</div><div class="name">Discord</div>
+    </button>
+    <button class="favorite" onclick="openSite('https://reddit.com')">
+      <div class="emoji">👾</div><div class="name">Reddit</div>
+    </button>
   </div>
 
-  <script src="./assets/script.js" defer></script>
+  <p class="hint">Funny.py Browser · Powered by Ultraviolet</p>
+</main>
+
+<footer>Funny.py Browser</footer>
+
+<script>
+function formatSearch(value){
+  value=value.trim();
+  if(!value)return null;
+
+  try{
+    return new URL(value).href;
+  }catch(e){}
+
+  if(value.includes(".") && !value.includes(" ")){
+    try{return new URL("https://"+value).href}catch(e){}
+  }
+
+  return "https://www.google.com/search?q="+encodeURIComponent(value);
+}
+
+function browse(value){
+  const input=document.getElementById("address");
+  const target=formatSearch(value || input.value);
+  if(!target)return;
+
+  if(!window.__uv$config){
+    alert("Funny.py could not load the Ultraviolet configuration.");
+    return;
+  }
+
+  window.location.href=
+    window.__uv$config.prefix+
+    window.__uv$config.encodeUrl(target);
+}
+
+function openSite(url){
+  browse(url);
+}
+
+document.getElementById("address").addEventListener("keydown",function(e){
+  if(e.key==="Enter")browse();
+});
+</script>
 </body>
-
 </html>
