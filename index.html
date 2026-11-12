@@ -52,14 +52,9 @@ h1{font-size:clamp(40px,6vw,64px);letter-spacing:-3px;margin:0;font-weight:800}.
 #internalview{position:absolute;inset:0;display:none;overflow:auto;background:radial-gradient(ellipse at 50% 0,#24213a,#111218 65%);padding:28px}
 #internalview.visible{display:block}.internal-wrap{max-width:1050px;margin:0 auto}.internal-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.internal-top h2{font-size:27px;margin:0;letter-spacing:-1px}.internal-sub{color:#969bad;margin:7px 0 22px}.appgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:13px}.appcard{background:#1c1e29;border:1px solid #303342;border-radius:13px;padding:17px;min-height:150px;display:flex;flex-direction:column;align-items:flex-start;gap:9px}.appicon{width:43px;height:43px;border-radius:12px;background:#30294a;display:grid;place-items:center;font-size:22px}.appcard strong{font-size:14px}.appcard p{margin:0;color:#969bad;line-height:1.45;font-size:12px;flex:1}.appcard button{border:0;border-radius:8px;background:#7656e8;padding:8px 12px;font-weight:700}.appcard button.secondary{background:#2c2f3b;border:1px solid #414555}.internal-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.internal-toolbar button{border:1px solid #383b49;background:#242733;border-radius:8px;padding:8px 12px}.internal-toolbar button.selected{background:#7656e8}.internal-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:white}.privacy-cover{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#171923,#29223f);color:white}.privacy-cover.visible{display:flex}.privacy-cover .privacy-card{padding:36px 48px;border:1px solid #ffffff22;border-radius:20px;background:#11131acc;box-shadow:0 20px 80px #0009}.privacy-cover h2{font-size:30px;margin:0 0 8px}.privacy-cover p{color:#b8bbca;margin:0}.game-stage{background:#101116;border:1px solid #303342;border-radius:14px;padding:22px;max-width:680px;margin:22px auto;text-align:center}.game-score{font-size:50px;font-weight:800;margin:20px}.game-stage button{background:#7656e8;border:0;border-radius:10px;padding:12px 18px;font-weight:700}
 
-
-#bottomFavorites{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:8;display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 10px;background:rgba(24,26,36,.94);border:1px solid #373a49;border-radius:16px;box-shadow:0 12px 38px #0008;backdrop-filter:blur(16px);max-width:calc(100% - 20px)}
-.bottom-fav{min-width:66px;height:54px;padding:5px 9px;border:1px solid transparent;border-radius:11px;background:transparent;color:#aeb2c0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:650}
-.bottom-fav .dockicon{font-size:19px;line-height:22px}.bottom-fav:hover,.bottom-fav.active{background:#2a2c3b;border-color:#49445f;color:white}.bottom-fav.active .dockicon{color:#b9a5ff}
-#internalview{padding-bottom:100px}
-#home .homeinner{padding-bottom:115px}
+#internalview{padding-bottom:28px}
 .music-embed{width:100%;height:calc(100vh - 205px);min-height:360px;border:1px solid #303342;border-radius:14px;background:#111218}
-@media(max-width:620px){#bottomFavorites{bottom:8px;gap:2px;padding:6px 5px;width:calc(100% - 14px)}.bottom-fav{min-width:0;flex:1;padding:4px 3px;font-size:9px}.bottom-fav .dockicon{font-size:18px}#internalview{padding:18px 14px 100px}.music-embed{height:calc(100vh - 180px)}}
+
 
 @media(max-width:620px){#favorites{grid-template-columns:repeat(2,1fr)}.tab{min-width:95px;max-width:145px}#bookmarkbar{overflow-x:auto}.navbuttons button{width:27px}#go{padding:8px 10px}.homeinner{padding-top:6vh}}
 </style>
@@ -89,13 +84,6 @@ h1{font-size:clamp(40px,6vw,64px);letter-spacing:-3px;margin:0;font-weight:800}.
    </div>
   </div>
   <div id="internalview"></div>
-  <nav id="bottomFavorites" aria-label="Funny.py favorites">
-   <button class="bottom-fav" data-route="games" title="Games"><span class="dockicon">🎮</span><span>Games</span></button>
-   <button class="bottom-fav" data-route="apps" title="Apps"><span class="dockicon">▦</span><span>Apps</span></button>
-   <button class="bottom-fav" data-route="music" title="Music"><span class="dockicon">♫</span><span>Music</span></button>
-   <button class="bottom-fav" data-route="settings" title="Settings"><span class="dockicon">⚙</span><span>Settings</span></button>
-   <button class="bottom-fav" data-route="extensions" title="Extensions"><span class="dockicon">⌘</span><span>Extensions</span></button>
-  </nav>
   <div id="sidepanel"><div class="panelhead"><span id="paneltitle">Browser tools</span><button class="panelclose" id="panelclose">×</button></div><div class="panelbody" id="panelbody"></div></div>
   <div id="inspectorHint">Element picker active — click an element inside the page to inspect it. Press Esc to stop.</div>
   <div id="toast"></div>
@@ -229,7 +217,8 @@ function renderInternal(route){
  else if(section==="apps")renderAppStore();
  else if(section==="games"&&parts[1])renderGame(parts[1]);
  else if(section==="games")renderGames();
- else if(section==="extensions")renderExtensions();\n else if(section==="music")renderMusic();
+ else if(section==="extensions")renderExtensions();
+ else if(section==="music")renderMusic();
  else setInternalContent('<div class="internal-wrap"><h2>Funny.py page not found</h2><p class="internal-sub">Try funny.py//settings, funny.py//apps, funny.py//games, funny.py//music, or funny.py//extensions.</p><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div>');
 }
 window.LuminSDK={
@@ -279,7 +268,22 @@ function renderBookmarks(){
 }
 function addBookmark(url,title){if(!url)return;if(settings.bookmarks.some(b=>b.url===url)){toast("Already bookmarked");return}settings.bookmarks.push({url,title:title||new URL(url).hostname});save("funny_settings",settings);renderBookmarks();toast("Bookmark saved")}
 function renderFavorites(){
- $("#favorites").innerHTML="";settings.favorites.forEach(([name,icon,url])=>{const b=document.createElement("button");b.className="favorite";b.innerHTML='<span class="favicon"></span><span class="favname"></span>';b.querySelector(".favicon").textContent=icon;b.querySelector(".favname").textContent=name;b.onclick=()=>navigate(url);$("#favorites").appendChild(b)});
+ const root=$("#favorites");root.innerHTML="";
+ const items=settings.favorites.map(([name,icon,url])=>({name,icon,url,internal:false}));
+ items.push(
+  {name:"Games",icon:"🎮",url:"funny.py//games",internal:true},
+  {name:"Apps",icon:"▦",url:"funny.py//apps",internal:true},
+  {name:"Music",icon:"♫",url:"funny.py//music",internal:true},
+  {name:"Settings",icon:"⚙",url:"funny.py//settings",internal:true},
+  {name:"Extensions",icon:"⌘",url:"funny.py//extensions",internal:true}
+ );
+ items.forEach(item=>{
+  const b=document.createElement("button");b.className="favorite";b.type="button";
+  const icon=document.createElement("span");icon.className="favicon";icon.textContent=item.icon;
+  const label=document.createElement("span");label.className="favname";label.textContent=item.name;
+  b.append(icon,label);b.title=item.internal?"Open "+item.name:"Open "+item.url;
+  b.onclick=()=>navigate(item.url);root.appendChild(b);
+ });
 }
 function openPanel(which){panel=which;$("#sidepanel").classList.add("open");const title={settings:"Settings",history:"History",bookmarks:"Bookmarks",tools:"Developer tools",downloads:"Downloads"}[which]||"Browser tools";$("#paneltitle").textContent=title;const body=$("#panelbody");
  if(which==="settings"){
@@ -322,7 +326,6 @@ $("#newtab").onclick=()=>createTab();$("#back").onclick=goBack;$("#forward").onc
 $("#bookmarkCurrent").onclick=()=>{const t=activeTab();if(t?.url)addBookmark(t.url,t.title);else toast("Open a page to bookmark it")};
 $("#addBookmark").onclick=()=>{const t=activeTab();if(t?.url)addBookmark(t.url,t.title);else toast("Open a page first")};
 $("#panelclose").onclick=closePanel;document.querySelectorAll("[data-panel]").forEach(b=>b.onclick=()=>openPanel(b.dataset.panel));
-document.querySelectorAll("#bottomFavorites [data-route]").forEach(b=>b.addEventListener("click",()=>navigate("funny.py//"+b.dataset.route)));
 
 $("#editFavorites").onclick=()=>{const raw=prompt("Enter favorite websites, one per line, as Name | URL",settings.favorites.map(f=>f[0]+" | "+f[2]).join("\n"));if(raw===null)return;const list=raw.split("\n").map(line=>{const p=line.split("|").map(x=>x.trim());if(p.length<2||!p[1])return null;return [p[0]||"Website","🌐",normalize(p.slice(1).join("|"))]}).filter(Boolean);settings.favorites=list;save("funny_settings",settings);renderFavorites()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&inspectMode)stopInspector();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="t"){e.preventDefault();createTab()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="w"){e.preventDefault();closeTab(activeId)}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="l"){e.preventDefault();$("#address").focus();$("#address").select()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"){e.preventDefault();$("#bookmarkCurrent").click()}if(e.altKey&&e.key==="ArrowLeft")goBack();if(e.altKey&&e.key==="ArrowRight")goForward()});
