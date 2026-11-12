@@ -14826,7 +14826,6 @@ window._libcurlReady = true;
                 u = (u || "").trim();
                 if (!u) return "";
                 if (/^funny\.py\/\//i.test(u)) return "funny.py//" + u.slice("funny.py//".length).replace(/^\/+/, "").toLowerCase();
-                if (/^funny\.py\/\//i.test(u)) return "funny.py//" + u.slice("funny.py//".length).replace(/^\/+/, "").toLowerCase();
                 if (/^gust:\/\/settings(\/.*)?$/i.test(u)) return u.toLowerCase().startsWith("gust://settings/") ? u : SETTINGS_INTERNAL;
                 if (/^gust:\/\/newtab$/i.test(u) || /^about:newtab$/i.test(u)) return HOME_INTERNAL;
                 if (/^gust:\/\/discord$/i.test(u) || /^about:discord$/i.test(u)) return DISCORD_INTERNAL;
@@ -18879,7 +18878,7 @@ _VIEWER_DL_JS +
                 return header + '<h1>Funny.py</h1><p class="muted">Unknown Funny.py page.</p>' + nav + footer;
             }
             function renderFunnyHub(route, push) {
-                const clean = route.replace(/^funny\\.py\\/\\//i, "");
+                const clean = route.replace(/^funny\.py\/\//i, "");
                 const title = clean.startsWith("apps") ? "Funny.py Apps" : clean.startsWith("games") ? "Funny.py Games" : clean.startsWith("extensions") ? "Funny.py Extensions" : "Funny.py Settings";
                 try { abortAllRequests(); closeAllSockets(); } catch (e) {}
                 hideNewTab(); hideSettingsPage();
