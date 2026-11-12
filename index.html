@@ -150,7 +150,7 @@ function formatSearch(value){
   return "https://www.google.com/search?q="+encodeURIComponent(value);
 }
 
-function browse(value){
+async function browse(value){
   const input=document.getElementById("address");
   const target=formatSearch(value || input.value);
   if(!target)return;
@@ -160,9 +160,20 @@ function browse(value){
     return;
   }
 
-  window.location.href=
-    window.__uv$config.prefix+
-    window.__uv$config.encodeUrl(target);
+  try {
+    // Wait until the worker controlling /service/ has installed and activated.
+    if (window.funnyPyServiceWorkerReady) {
+      await window.funnyPyServiceWorkerReady;
+    } else if ("serviceWorker" in navigator) {
+      await navigator.serviceWorker.ready;
+    }
+
+    const prefix = new URL(window.__uv$config.prefix, location.href);
+    window.location.href = prefix.href + window.__uv$config.encodeUrl(target);
+  } catch (error) {
+    console.error("Funny.py could not start its proxy:", error);
+    alert("Funny.py could not start the proxy. Check the service worker registration and reload the page.");
+  }
 }
 
 function openSite(url){
