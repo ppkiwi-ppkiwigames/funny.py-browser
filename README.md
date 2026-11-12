@@ -20,4 +20,4 @@ To use another compatible Bare server, update the `bare` value in `uv/uv.config.
 
 ## Credits and license
 
-This project uses Ultraviolet by Titanium Network. The original template and frontend inspiration are credited in the upstream project. This repository retains the AGPL-3.0 license; see [LICENSE](LICENSE). Changes made for Funny.py include the frontend branding, GitHub Pages path configuration, and service-worker registration layout.
+This project uses Ultraviolet by Titanium Network. The browser interface is an independently written Funny.py design inspired by the feature set and layout ideas of [GUST by Nautilus Labs](https://github.com/nautilus-os/GUST); no GUST source code is bundled here. This repository retains the AGPL-3.0 license; see [LICENSE](LICENSE). Changes made for Funny.py include the frontend branding, GitHub Pages path configuration, and service-worker registration layout.
