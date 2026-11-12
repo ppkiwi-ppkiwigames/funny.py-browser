@@ -253,16 +253,22 @@ function renderMusic(){
  const tab=activeTab();if(!tab)return;
  tab.title="Funny.py Music";tab.contentUrl=musicUrl;renderTabs();
  $("#address").value="funny.py//music";
+ let bar=$("#musicFallbackBar");
+ if(!bar){
+  bar=document.createElement("div");bar.id="musicFallbackBar";
+  bar.style.cssText="position:absolute;z-index:8;right:16px;bottom:16px;padding:9px 12px;border:1px solid #51466f;border-radius:12px;background:#1b1a27;color:#fff;font:12px system-ui;box-shadow:0 5px 24px #0008";
+  bar.innerHTML='<span>Music blank?</span> <button id="musicDirectFallback" style="margin-left:8px;padding:6px 9px;border:0;border-radius:7px;background:#9477ed;color:white;cursor:pointer">Open embedded version</button>';
+  $("#stage").appendChild(bar);
+ }
+ bar.style.display="block";
+ $("#musicDirectFallback").onclick=()=>{
+  const frame=getTabFrame(tab);hideTabFrames(tab.id);$("#internalview").classList.remove("visible");$("#home").style.display="none";
+  frame.setAttribute("sandbox","allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals");
+  frame.src=musicUrl;frame.style.display="block";tab.loadedUrl="direct:"+musicUrl;tab.contentUrl=musicUrl;
+ };
  log("Opening Funny.py Music through embedded WISP","navigation");
  showProxiedPage(musicUrl,tab,true).then(()=>log("Funny.py Music opened","load")).catch(e=>{
-  if(tab.id===activeId){
-   setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Funny.py Music</h2><div class="internal-sub">The music page could not be loaded through WISP.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><p class="internal-sub">'+escapeHTML(e.message)+'</p><button class="action" id="musicDirectFallback">Try embedded music page</button></div>');
-   $("#musicDirectFallback").onclick=()=>{
-    const frame=getTabFrame(tab);hideTabFrames(tab.id);$("#internalview").classList.remove("visible");$("#home").style.display="none";
-    frame.setAttribute("sandbox","allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals");
-    frame.src=musicUrl;frame.style.display="block";tab.loadedUrl="direct:"+musicUrl;tab.contentUrl=musicUrl;
-   };
-  }
+  if(tab.id===activeId)toast("Music WISP load failed: "+e.message);
   log("Music error: "+e.message,"error")
  });
 }
