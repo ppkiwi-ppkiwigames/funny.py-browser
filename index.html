@@ -197,7 +197,18 @@ function setInternalContent(html){
 function appIsInstalled(id){return (load("funny_installed_apps",[])||[]).includes(id)}
 function installApp(id){const a=load("funny_installed_apps",["lumin-demo"]);if(!a.includes(id))a.push(id);save("funny_installed_apps",a);toast("App installed")}
 function uninstallApp(id){save("funny_installed_apps",(load("funny_installed_apps",["lumin-demo"])||[]).filter(x=>x!==id));toast("App uninstalled")}
-function openInternalApp(id){const app=BUILTIN_APPS.find(x=>x.id===id);if(!app){toast("App not found");return}if(!appIsInstalled(id)){toast("Install this app first");return}const t=activeTab()||createTab();t.url=app.url;t.title=app.name;t.history=t.history.slice(0,t.index+1);t.history.push(app.url);t.index=t.history.length-1;$("#address").value=app.url;renderTabs();$("#home").style.display="none";$("#internalview").classList.remove("visible");showProxiedPage(app.url,t,true).then(()=>log("Opened "+app.name+" through embedded WISP","load")).catch(e=>{toast("Could not open app: "+e.message);log("App launch error: "+e.message,"error")})}
+function openInternalApp(id){
+ const app=BUILTIN_APPS.find(x=>x.id===id);if(!app){toast("App not found");return}
+ if(!appIsInstalled(id)){toast("Install this app first");return}
+ const t=activeTab()||createTab(),route="funny.py//apps/"+id;
+ if(t.url!==route){t.history=t.history.slice(0,t.index+1);t.history.push(route);t.index=t.history.length-1}
+ t.url=route;t.contentUrl=app.url;t.title=app.name;
+ $("#address").value=route;renderTabs();$("#home").style.display="none";$("#internalview").classList.remove("visible");
+ showProxiedPage(app.url,t,true).then(()=>log("Opened "+app.name+" through embedded WISP","load")).catch(e=>{
+  if(t.id===activeId){setInternalContent('<div class="internal-wrap"><h2>'+escapeHTML(app.name)+' could not load</h2><p class="internal-sub">'+escapeHTML(e.message)+'</p><button class="action" onclick="openInternalApp(\''+id+'\')">Try again</button></div>')}
+  log("App launch error: "+e.message,"error")
+ })
+}
 function renderAppStore(){
  const apps=BUILTIN_APPS.map(a=>'<article class="appcard"><div class="appicon">'+a.icon+'</div><strong>'+escapeHTML(a.name)+'</strong><p>'+escapeHTML(a.description)+'</p><button data-install="'+a.id+'">'+(appIsInstalled(a.id)?"Open":"Install")+'</button></article>').join("");
  setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Apps</h2><div class="internal-sub">Install an app, then open it inside a Funny.py tab.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appgrid">'+apps+'</div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//games\')">Games hub</button><button onclick="navigate(\'funny.py//extensions\')">Extensions hub</button><button onclick="navigate(\'funny.py//settings\')">Settings</button></div></div>');
@@ -239,9 +250,21 @@ function renderInternalSettings(){
 }
 function renderMusic(){
  const musicUrl="https://shore-cloud-28296.surge.sh/pages/music.html";
- const tab=activeTab();if(tab){tab.title="Funny.py Music";renderTabs()}
- log("Opening Funny.py Music through GUST WISP","navigation");
- showProxiedPage(musicUrl,tab,true).then(()=>log("Funny.py Music opened","load")).catch(e=>{toast("Music could not open: "+e.message);log("Music error: "+e.message,"error")});
+ const tab=activeTab();if(!tab)return;
+ tab.title="Funny.py Music";tab.contentUrl=musicUrl;renderTabs();
+ $("#address").value="funny.py//music";
+ log("Opening Funny.py Music through embedded WISP","navigation");
+ showProxiedPage(musicUrl,tab,true).then(()=>log("Funny.py Music opened","load")).catch(e=>{
+  if(tab.id===activeId){
+   setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Funny.py Music</h2><div class="internal-sub">The music page could not be loaded through WISP.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><p class="internal-sub">'+escapeHTML(e.message)+'</p><button class="action" id="musicDirectFallback">Try embedded music page</button></div>');
+   $("#musicDirectFallback").onclick=()=>{
+    const frame=getTabFrame(tab);hideTabFrames(tab.id);$("#internalview").classList.remove("visible");$("#home").style.display="none";
+    frame.setAttribute("sandbox","allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-modals");
+    frame.src=musicUrl;frame.style.display="block";tab.loadedUrl="direct:"+musicUrl;tab.contentUrl=musicUrl;
+   };
+  }
+  log("Music error: "+e.message,"error")
+ });
 }
 function renderInternal(route){
  const parts=route.split("/");const section=parts[0]||"home";
