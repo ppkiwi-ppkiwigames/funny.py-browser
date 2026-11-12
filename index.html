@@ -17,7 +17,7 @@ button,input,select{font:inherit}button{color:inherit;cursor:pointer}button:focu
 #tabrow{height:43px;display:flex;align-items:center;gap:6px;padding:6px 9px 0;background:#101116}
 #tabs{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;height:100%}#tabs::-webkit-scrollbar{display:none}
 .tab{height:34px;min-width:120px;max-width:220px;flex:0 1 190px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#1a1c25;border:1px solid #292c37;border-bottom:0;border-radius:9px 9px 0 0;color:#aeb2c0;white-space:nowrap;overflow:hidden}
-.tab.active{background:#242631;color:white;border-color:#343746}.tab .tabtitle{overflow:hidden;text-overflow:ellipsis;flex:1;text-align:left}.tab .close{border:0;background:none;color:#85899a;padding:2px 4px;font-size:16px}.tab .close:hover{color:white}
+.tab.active{background:#242631;color:white;border-color:#343746}.compact-tabs .tab{min-width:78px;max-width:155px}.hide-bookmarks #bookmarkbar{display:none}.hide-clock #clock,.hide-clock #date{display:none}.tab .tabtitle{overflow:hidden;text-overflow:ellipsis;flex:1;text-align:left}.tab .close{border:0;background:none;color:#85899a;padding:2px 4px;font-size:16px}.tab .close:hover{color:white}
 #newtab,.iconbtn{border:0;background:transparent;color:#aeb2c0;border-radius:8px;width:32px;height:30px;font-size:17px;display:grid;place-items:center;flex:none}#newtab:hover,.iconbtn:hover{background:#292c38;color:white}
 #toolbar{height:49px;display:flex;align-items:center;gap:7px;padding:6px 12px;background:#1a1c24}
 .navbuttons{display:flex;gap:2px}.navbuttons button{width:31px;height:31px;border:0;border-radius:8px;background:transparent;color:#aeb2c0;font-size:17px}.navbuttons button:hover{background:#2b2e3a;color:white}
@@ -112,9 +112,9 @@ const BUILTIN_APPS=[
  {id:"lumin-demo",name:"Lumin SDK Demo",icon:"✦",description:"A tiny sample game built with the built-in Lumin-compatible SDK.",kind:"game"}
 ];
 const EXTENSIONS=[
- {id:"reader-mode",name:"Reader mode",description:"A local reading-view toggle for supported pages."},
  {id:"compact-tabs",name:"Compact tabs",description:"Use a denser tab strip."},
- {id:"newtab-clock",name:"New-tab clock",description:"Show the clock on the Funny.py start page."}
+ {id:"hide-bookmarks",name:"Hide bookmarks bar",description:"Hide the bookmarks strip to free up space."},
+ {id:"hide-clock",name:"Hide new-tab clock",description:"Hide the clock and date on the start page."}
 ];
 function internalRoute(raw){
  const v=String(raw||"").trim().toLowerCase().replace(/^https?:\/\//,"");
@@ -144,18 +144,20 @@ function renderAppStore(){
  $("#internalview").querySelectorAll("[data-install]").forEach(b=>b.onclick=()=>{const id=b.dataset.install;if(appIsInstalled(id))openInternalApp(id);else{installApp(id);renderAppStore()}});
 }
 function renderGames(){
- setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Games</h2><div class="internal-sub">Games run inside Funny.py tabs using the built-in Lumin-compatible SDK.</div></div><button class="action" onclick="navigate(\'funny.py//apps\')">Apps</button></div><div class="appgrid"><article class="appcard"><div class="appicon">✦</div><strong>Lumin SDK Demo</strong><p>Sample clicker game to test the game runtime.</p><button id="launchDemo">'+(appIsInstalled("lumin-demo")?"Play":"Install & play")+'</button></article></div></div>');
+ const custom=load("funny_custom_games",[]);const customCards=custom.map(g=>'<article class="appcard"><div class="appicon">'+escapeHTML(g.icon||"🎮")+'</div><strong>'+escapeHTML(g.name)+'</strong><p>'+escapeHTML(g.description||"Custom Lumin SDK game")+"</p><button data-custom-game=\'"+escapeHTML(g.id)+"\'>Play</button></article>").join("");
+ setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Games</h2><div class="internal-sub">Games run inside Funny.py tabs using the built-in Lumin-compatible SDK.</div></div><button class="action" onclick="navigate(\'funny.py//apps\')">Apps</button></div><div class="appgrid"><article class="appcard"><div class="appicon">✦</div><strong>Lumin SDK Demo</strong><p>Sample clicker game to test the game runtime.</p><button id="launchDemo">'+(appIsInstalled("lumin-demo")?"Play":"Install & play")+'</button></article>'+customCards+"</div></div>");
  $("#launchDemo").onclick=()=>{if(!appIsInstalled("lumin-demo"))installApp("lumin-demo");navigate("funny.py//games/lumin-demo")};
+ $("#internalview").querySelectorAll("[data-custom-game]").forEach(b=>b.onclick=()=>navigate("funny.py//games/"+b.dataset.customGame));
 }
 function renderGame(id){
- if(id!=="lumin-demo"){setInternalContent('<div class="internal-wrap"><h2>Game not found</h2><button class="action" onclick="navigate(\'funny.py//games\')">Back</button></div>');return}
+ if(id!=="lumin-demo"){const custom=(load("funny_custom_games",[])||[]).find(g=>g.id===id);const render=window._funnyGameRender?.[id];if(custom&&typeof render==="function"){setInternalContent('<div class="internal-wrap"><div class="internal-top"><h2>'+escapeHTML(custom.name)+'</h2><button class="action" onclick="navigate(\'funny.py//games\')">All games</button></div><div id="customGameRoot"></div></div>');render($("#customGameRoot"),window.LuminSDK);return}setInternalContent('<div class="internal-wrap"><h2>Game not found</h2><button class="action" onclick="navigate(\'funny.py//games\')">Back</button></div>');return}
  setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Lumin SDK Demo</h2><div class="internal-sub">funny.py//games/lumin-demo</div></div><button class="action" onclick="navigate(\'funny.py//games\')">All games</button></div><div class="game-stage"><p>Tap to earn points</p><div class="game-score" id="score">0</div><button id="tapGame">+1 point</button><p style="color:#9da1b1">Example game using window.LuminSDK</p></div></div>');
  let score=0;$("#tapGame").onclick=()=>{$("#score").textContent=String(++score);window.LuminSDK?.emit("score",score)};
 }
 function renderExtensions(){
  const enabled=load("funny_extensions",[]);
  setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Extensions</h2><div class="internal-sub">Manage lightweight Funny.py interface extensions.</div></div><button class="action" onclick="navigate(\'funny.py//settings\')">Settings</button></div><div class="appgrid">'+EXTENSIONS.map(e=>'<article class="appcard"><div class="appicon">⌘</div><strong>'+e.name+'</strong><p>'+e.description+'</p><button class="extension-toggle" data-ext="'+e.id+'">'+(enabled.includes(e.id)?"Disable":"Enable")+'</button></article>').join("")+'</div></div>');
- $("#internalview").querySelectorAll("[data-ext]").forEach(b=>b.onclick=()=>{const id=b.dataset.ext;let list=load("funny_extensions",[]);list=list.includes(id)?list.filter(x=>x!==id):[...list,id];save("funny_extensions",list);renderExtensions()});
+ $("#internalview").querySelectorAll("[data-ext]").forEach(b=>b.onclick=()=>{const id=b.dataset.ext;let list=load("funny_extensions",[]);list=list.includes(id)?list.filter(x=>x!==id):[...list,id];save("funny_extensions",list);applyExtensions();renderExtensions()});
 }
 function renderInternalSettings(){
  setInternalContent('<div class="internal-wrap"><div class="internal-top"><div><h2>Funny.py Settings</h2><div class="internal-sub">Browser preferences and privacy controls.</div></div><button class="action" onclick="navigate(\'funny.py//home\')">Home</button></div><div class="appcard" style="max-width:650px"><strong>Privacy screen</strong><p>Show a neutral privacy screen when Funny.py loses focus. This does not imitate another website.</p><label><input id="privacyEnabled" type="checkbox"> Enable privacy screen</label><div class="field" style="width:100%;margin-top:12px"><label>Screen style</label><select id="privacyPreset"><option value="midnight">Midnight</option><option value="violet">Violet gradient</option><option value="plain">Plain dark</option></select></div><button class="primary" id="savePrivacy">Save privacy settings</button></div><div class="internal-toolbar"><button onclick="navigate(\'funny.py//apps\')">Apps</button><button onclick="navigate(\'funny.py//games\')">Games</button><button onclick="navigate(\'funny.py//extensions\')">Extensions</button></div></div>');
@@ -180,6 +182,7 @@ window.LuminSDK={
  toast,save:(key,value)=>save("lumin_"+key,value),load:(key,fallback)=>load("lumin_"+key,fallback),
  navigate:url=>navigate(url),emit:(name,data)=>window.dispatchEvent(new CustomEvent("lumin:"+name,{detail:data}))
 };
+function applyExtensions(){const enabled=load("funny_extensions",[]);document.body.classList.toggle("compact-tabs",enabled.includes("compact-tabs"));document.body.classList.toggle("hide-bookmarks",enabled.includes("hide-bookmarks"));document.body.classList.toggle("hide-clock",enabled.includes("hide-clock"));}
 function applyPrivacyPreset(){
  const cfg=load("funny_privacy",{enabled:false,preset:"midnight"});const cover=$("#privacyCover");if(!cover)return;
  const styles={midnight:"linear-gradient(135deg,#12141d,#25213a)",violet:"linear-gradient(135deg,#33205c,#7656e8)",plain:"#111218"};
@@ -279,7 +282,7 @@ $("#editFavorites").onclick=()=>{const raw=prompt("Enter favorite websites, one 
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&inspectMode)stopInspector();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="t"){e.preventDefault();createTab()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="w"){e.preventDefault();closeTab(activeId)}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="l"){e.preventDefault();$("#address").focus();$("#address").select()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"){e.preventDefault();$("#bookmarkCurrent").click()}if(e.altKey&&e.key==="ArrowLeft")goBack();if(e.altKey&&e.key==="ArrowRight")goForward()});
 window.addEventListener("error",e=>log("JavaScript: "+e.message,"error"));
 window.addEventListener("unhandledrejection",e=>log("Promise: "+String(e.reason),"error"));
-applySettings();applyPrivacyPreset();document.addEventListener("visibilitychange",privacyEvent);window.addEventListener("blur",()=>{const cfg=load("funny_privacy",{enabled:false});if(cfg.enabled)$("#privacyCover").classList.add("visible")});window.addEventListener("focus",()=>$("#privacyCover").classList.remove("visible"));updateClock();setInterval(updateClock,15000);createTab();
+applySettings();applyExtensions();applyPrivacyPreset();document.addEventListener("visibilitychange",privacyEvent);window.addEventListener("blur",()=>{const cfg=load("funny_privacy",{enabled:false});if(cfg.enabled)$("#privacyCover").classList.add("visible")});window.addEventListener("focus",()=>$("#privacyCover").classList.remove("visible"));updateClock();setInterval(updateClock,15000);createTab();
 log("Funny.py browser started");
 </script>
 </body>
