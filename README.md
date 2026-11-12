@@ -1,25 +1,41 @@
 # Funny.py Browser
 
-Funny.py is a browser-style frontend powered by Ultraviolet.
+Funny.py is a single-file browser built on the GUST WISP proxy engine.
 
-## Hosting
+## Run it
 
-The browser includes internal pages such as `funny.py//settings`, `funny.py//apps`, `funny.py//games`, and `funny.py//extensions`. The Apps page includes an installable Interf$ce OS launcher. A built-in Lumin-compatible game SDK is exposed as `window.LuminSDK`.
+Open `index.html` in a modern browser or host that one file on a static host such as GitHub Pages. The browser proxy engine does not use a Service Worker. The page itself contains the GUST/libcurl.js runtime; WISP endpoints and a few presentation/game-catalog libraries are loaded over the network.
 
-This repository is configured for the GitHub Pages project site:
+## Funny.py internal pages
 
-`https://ppkiwi-ppkiwigames.github.io/funny.py-browser/`
+- `funny.py//apps` — install and launch Interf$ce OS.
+- `funny.py//apps/interface-os` — Interf$ce OS app page.
+- `funny.py//extensions` — Funny.py extension hub; opens the built-in extension store.
+- `funny.py//games` — LuminSDK game catalog.
+- `funny.py//games/<game-id>` — launch a LuminSDK game.
+- `funny.py//settings` — Funny.py settings shortcut.
 
-In GitHub, open **Settings → Pages** and select **Deploy from a branch**, branch **main**, folder **/(root)**.
+The toolbar includes direct Apps, Games, and Extensions shortcuts. App installation is stored in the browser's local storage.
 
-The Ultraviolet service worker is `uv-sw.js` at the repository root and is registered with the `/funny.py-browser/` scope. This is required so it can control the browser page and intercept proxy requests under `/service/`. The older `service/uv-sw.js` file is retained for compatibility but is not the active worker.
+## WISP servers
 
-## Bare server requirement
+Open **Settings → Connection → WISP Server**. Presets include:
 
-Ultraviolet requires a working Bare server. The current configuration uses `https://tomp.app` in `uv/uv.config.js`. GitHub Pages hosts the static frontend and does not host the Bare server itself. If that Bare endpoint is unavailable or does not support the required protocol, the proxy will not be able to load websites even when the frontend is deployed correctly.
+- Default: `wss://wisp.mercurywork.shop/`
+- Truffled: `wss://truffled.lol`
+- Anura: `wss://anura.pro`
+- Any custom `wss://` endpoint
 
-To use another compatible Bare server, update the `bare` value in `uv/uv.config.js`.
+A WISP server must be online and support the WISP protocol. Public endpoints can change or become unavailable.
 
-## Credits and license
+## LuminSDK
 
-This project uses Ultraviolet by Titanium Network. The browser interface is an independently written Funny.py design inspired by the feature set and layout ideas of [GUST by Nautilus Labs](https://github.com/nautilus-os/GUST); no GUST source code is bundled here. This repository retains the AGPL-3.0 license; see [LICENSE](LICENSE). Changes made for Funny.py include the frontend branding, GitHub Pages path configuration, and service-worker registration layout.
+The Games hub uses the documented LuminSDK headless API to load the game catalog and launch games. It loads the SDK from the LuminSDK jsDelivr distribution, so the catalog requires an internet connection.
+
+## Upstream source and license
+
+The proxy engine in this repository is modified from **GUST by Nautilus Labs**: https://github.com/nautilus-os/GUST
+
+GUST's original single-file browser engine and its vendored libcurl.js/WISP implementation are included and modified for Funny.py. Original upstream copyright and license notices are retained in the source where present. The upstream project is licensed under **GNU AGPL v3.0**. This modified distribution is also provided under AGPL-3.0; see [LICENSE](LICENSE) and [GUST-NOTICE.md](GUST-NOTICE.md).
+
+Modifications include Funny.py branding, Funny.py internal app/extension/game routes, the Interf$ce OS launcher, LuminSDK game catalog integration, and WISP server presets. If you run a modified version as a network service, comply with the AGPL source-sharing requirements.
