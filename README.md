@@ -1,21 +1,23 @@
-# Ultraviolet Template
-A template for creating your own Ultraviolet proxy. It has all the files for you to get up and running right away.
+# Funny.py Browser
 
-### Usage
-This repository can be hosted on any static host, such as GitHub Pages, Vercel, Netlify, etc. The one thing you might need to replace is a [**Bare server**](https://github.com/tomphttp/bare-server-node). This is a Node.js (or other language) server that must be hosted for the proxy to work. It is not deployable on static server hostings. By default, this repository uses https://tomp.app.
+Funny.py is a browser-style frontend powered by Ultraviolet.
 
-To change the Bare server, clone the repository and edit the `uv/uv.config.js` file. There is a property marked by a comment that can be changed to your Bare server if desired.
+## Hosting
 
-There have been comments placed throughout the code to attempt to help people who are new to coding better understand the inner workings of a proxy website and how they function.
+This repository is configured for the GitHub Pages project site:
 
-### Credits
-This repository uses Ultraviolet as the main proxy, which was created by Titanium Network. The frontend design was also inspired by their official demo page.
+`https://ppkiwi-ppkiwigames.github.io/funny.py-browser/`
 
-I wrote the styles and JavaScript for the frontend.
+In GitHub, open **Settings → Pages** and select **Deploy from a branch**, branch **main**, folder **/(root)**.
 
-The AGPL-3 license is used on this repository. This means you must disclose the original source when making changes or redistributing. The best way to do this is not to remove or change the footer on the website. It's good to provide credit to the people who provided the software for you.
+The Ultraviolet service worker is located at `service/uv-sw.js`. It must remain inside the `service/` directory because its scope is `/funny.py-browser/service/`. Moving it to the repository root can cause the browser to reject registration on GitHub Pages.
 
-### Support
-For support, please do not contact Titanium Network, they most likely will not help you. Instead, [open an issue](https://github.com/proudparrot2/ultraviolet/issues/new).
+## Bare server requirement
 
-You can also join my [Discord server](https://discord.gg/desmos) or DM me on Discord `@proudparrot2`.
+Ultraviolet requires a working Bare server. The current configuration uses `https://tomp.app` in `uv/uv.config.js`. GitHub Pages hosts the static frontend and does not host the Bare server itself. If that Bare endpoint is unavailable or does not support the required protocol, the proxy will not be able to load websites even when the frontend is deployed correctly.
+
+To use another compatible Bare server, update the `bare` value in `uv/uv.config.js`.
+
+## Credits and license
+
+This project uses Ultraviolet by Titanium Network. The original template and frontend inspiration are credited in the upstream project. This repository retains the AGPL-3.0 license; see [LICENSE](LICENSE). Changes made for Funny.py include the frontend branding, GitHub Pages path configuration, and service-worker registration layout.
