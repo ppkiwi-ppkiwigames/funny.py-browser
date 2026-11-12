@@ -23,32 +23,8 @@
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <!-- Modified for Funny.py on 2026-11-11. Original proxy engine: GUST by Nautilus Labs, AGPL-3.0. See README and LICENSE. -->
-    <meta name="description" content="Funny.py — a WISP-powered browser based on GUST." />
-    <title>Funny.py Browser</title>
-    <script>
-    // Remove the previous Funny.py Ultraviolet worker so it cannot intercept GUST/WISP traffic.
-    (function () {
-        if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
-        const basePath = new URL("./", location.href).pathname;
-        navigator.serviceWorker.getRegistrations().then(function (registrations) {
-            const stale = registrations.filter(function (registration) {
-                const worker = registration.active || registration.waiting || registration.installing;
-                if (!worker || !/(?:uv-sw\.js|service\/uv-sw\.js)/i.test(worker.scriptURL)) return false;
-                return new URL(registration.scope).pathname.startsWith(basePath);
-            });
-            if (!stale.length) return;
-            Promise.all(stale.map(function (registration) { return registration.unregister(); })).then(function () {
-                try {
-                    if (navigator.serviceWorker.controller && !sessionStorage.getItem("funny.py:old-sw-cleared")) {
-                        sessionStorage.setItem("funny.py:old-sw-cleared", "1");
-                        location.reload();
-                    }
-                } catch (e) {}
-            });
-        }).catch(function () {});
-    })();
-    </script>
+    <meta name="description" content="GUST: A service worker -less web browser-in-a-browser" />
+    <title>GUST Browser</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%239de5ff' d='M288 32c0 17.7 14.3 32 32 32h32c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H352c53 0 96-43 96-96s-43-96-96-96H320c-17.7 0-32 14.3-32 32zm64 352c0 17.7 14.3 32 32 32h32c53 0 96-43 96-96s-43-96-96-96H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H384c-17.7 0-32 14.3-32 32zM128 512h32c53 0 96-43 96-96s-43-96-96-96H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H160c17.7 0 32 14.3 32 32s-14.3 32-32 32H128c-17.7 0-32 14.3-32 32s14.3 32 32 32z'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -5929,7 +5905,7 @@
                 </div>
                 <div class="gust-noscript-title">Woah there!</div>
                 <div class="gust-noscript-body">
-                    Funny.py needs JavaScript to run. It looks like JavaScript is currently
+                    GUST needs JavaScript to run. It looks like JavaScript is currently
                     disabled, possibly because this file is being opened as a
                     <code style="background:#252b33;padding:1px 5px;border-radius:4px;font-size:12px;">file://</code>
                     or
@@ -6027,9 +6003,6 @@
                 <i class="fas fa-chevron-down"></i>
             </button>
             <div id="extBar" title="Extensions"></div>
-            <button class="tool-btn" id="funnyAppsBtn" title="Funny.py Apps"><i class="fas fa-grid-2"></i></button>
-            <button class="tool-btn" id="funnyGamesBtn" title="Funny.py Games"><i class="fas fa-gamepad"></i></button>
-            <button class="tool-btn" id="funnyExtensionsBtn" title="Funny.py Extensions"><i class="fas fa-puzzle-piece"></i></button>
             <button class="ext-puzzle-btn" id="extPuzzleBtn" title="Extensions">
                 <i class="fas fa-puzzle-piece"></i>
             </button>
@@ -6044,7 +6017,7 @@
             </button>
             <!-- Removed duplicate findBtn from toolbar -->
 
-            <button class="tool-btn" id="aiBtn" title="Toggle Funny.py Assistant (Alt+A)">
+            <button class="tool-btn" id="aiBtn" title="Toggle GUST Assistant (Alt+A)">
                 <i class="fas fa-wand-magic-sparkles"></i>
             </button>
 
@@ -6481,12 +6454,6 @@
                                         <div style="display:flex; gap:8px;">
                                             <input type="text" class="settings-input" id="settingsWispInput" value=""
                                                 placeholder="wss://...">
-                                            <select class="settings-input" id="settingsWispPreset" style="margin-top:8px;">
-                                                <option value="wss://wisp.mercurywork.shop/">Default WISP — Mercury Workshop</option>
-                                                <option value="wss://truffled.lol">Truffled — truffled.lol</option>
-                                                <option value="wss://anura.pro">Anura — anura.pro</option>
-                                                <option value="custom">Custom WISP URL</option>
-                                            </select>
                                             <button class="settings-btn-icon" id="settingsWispSave" title="Save"><i
                                                     class="fas fa-check"></i></button>
                                             <button class="settings-btn-icon" id="settingsWispReset"
@@ -6903,7 +6870,7 @@
                                                     <div class="sp-bar"><span class="sp-dot"></span><span class="sp-dot"></span><span class="sp-omni"></span><span class="sp-dot"></span></div>
                                                     <div class="sp-body"></div>
                                                 </div>
-                                                <div class="skin-tile-name"><i class="fas fa-wind" style="color:#9de5ff;"></i><span>Funny.py</span><span class="skin-tile-check"><i class="fas fa-check"></i></span></div>
+                                                <div class="skin-tile-name"><i class="fas fa-wind" style="color:#9de5ff;"></i><span>GUST</span><span class="skin-tile-check"><i class="fas fa-check"></i></span></div>
                                             </button>
                                             <button class="skin-tile" data-skinval="chrome">
                                                 <div class="skin-prev sk-chrome">
@@ -7493,7 +7460,7 @@
                                                         <div style="margin-bottom:6px;">
                                                             <span style="color:var(--tx);font-weight:600;">Nautilus Labs</span>
                                                             <span style="color:var(--tx3)"> — </span>
-                                                            Original GUST proxy engine by Nautilus Labs · Funny.py modifications
+                                                            The team behind GUST
                                                         </div>
                                                         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding-left:2px;">
                                                             <a href="https://github.com/nautilus-os" target="_blank" rel="noopener" style="color:var(--ac);font-size:12px;text-decoration:none;background:rgba(157,229,255,0.08);border:1px solid rgba(157,229,255,0.2);border-radius:5px;padding:2px 8px;display:inline-flex;align-items:center;gap:5px;">Nautilus Labs <i class="fas fa-arrow-up-right-from-square" style="font-size:10px;opacity:0.7;"></i></a><span style="color:var(--tx2);font-size:12px;margin-left:-2px;">:</span>
@@ -9288,7 +9255,7 @@ if(token){ $('#tok').value=token; start(); }
             <div class="ai-sidebar hidden" id="aiSidebar">
                 <div class="ai-panel-resize-handle" id="aiResizeHandle"></div>
                 <div class="ai-sidebar-head">
-                    <span class="ai-sidebar-title">Funny.py Assistant <span style="font-size:10px;font-weight:700;color:#ff4444;margin-left:4px;">[experimental]</span></span>
+                    <span class="ai-sidebar-title">GUST Assistant <span style="font-size:10px;font-weight:700;color:#ff4444;margin-left:4px;">[experimental]</span></span>
                     <div style="display:flex;align-items:center;gap:12px;margin-left:auto;font-size:13px;color:var(--tx2);user-select:none;">
                         <span>Page Context</span>
                         <div class="settings-switch" id="aiContextToggle" title="Let GUST Assistant read the current page">
@@ -14848,7 +14815,6 @@ window._libcurlReady = true;
             function normUrl(u) {
                 u = (u || "").trim();
                 if (!u) return "";
-                if (/^funny\.py\/\//i.test(u)) return "funny.py//" + u.slice("funny.py//".length).replace(/^\/+/, "").toLowerCase();
                 if (/^gust:\/\/settings(\/.*)?$/i.test(u)) return u.toLowerCase().startsWith("gust://settings/") ? u : SETTINGS_INTERNAL;
                 if (/^gust:\/\/newtab$/i.test(u) || /^about:newtab$/i.test(u)) return HOME_INTERNAL;
                 if (/^gust:\/\/discord$/i.test(u) || /^about:discord$/i.test(u)) return DISCORD_INTERNAL;
@@ -18861,78 +18827,6 @@ _VIEWER_DL_JS +
             }
             // ─────────────────────────────────────────────────────────────
 
-
-            // Funny.py additions layered over the GUST WISP engine.
-            function funnyHubDocument(route) {
-                const parts = route.split("/");
-                const section = (parts[0] || "apps").toLowerCase();
-                const id = parts.slice(1).join("/");
-                const closeScript = "<" + "/script>";
-                const css = '<style>*{box-sizing:border-box}body{margin:0;padding:28px;background:#101116;color:#f5f5f7;font:14px Inter,system-ui,sans-serif}h1{font-size:28px;margin:0 0 8px}.muted{color:#9da1b1;line-height:1.6}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.card{background:#1a1c25;border:1px solid #303341;border-radius:14px;padding:18px;min-height:150px}.icon{font-size:30px;margin-bottom:12px}.card h2{font-size:17px;margin:0 0 8px}.btn{border:0;border-radius:9px;background:#9b7cff;color:#100e18;padding:10px 14px;font-weight:700;cursor:pointer;margin:5px 6px 0 0}.btn.secondary{background:#292c38;color:#eee}.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.game{display:flex;flex-direction:column;gap:10px;cursor:pointer}.game img{width:100%;height:120px;object-fit:cover;border-radius:9px;background:#252836}.gameframe{width:100%;height:calc(100vh - 150px);border:0;border-radius:12px;background:#08090d}.status{padding:12px;border-radius:9px;background:#191c25;color:#b7b9c7;margin:12px 0}</style>';
-                const header = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Funny.py</title>' + css + '</head><body>';
-                const footer = '</body></html>';
-                const nav = '<div class="bar"><button class="btn secondary" onclick="parent.postMessage({type:\'funny-hub-go\',url:\'funny.py//apps\'},\'*\')">Apps</button><button class="btn secondary" onclick="parent.postMessage({type:\'funny-hub-go\',url:\'funny.py//games\'},\'*\')">Games</button><button class="btn secondary" onclick="parent.postMessage({type:\'funny-hub-go\',url:\'funny.py//extensions\'},\'*\')">Extensions</button><button class="btn secondary" onclick="parent.postMessage({type:\'funny-hub-go\',url:\'funny.py//settings\'},\'*\')">Settings</button></div>';
-                if (section === "apps" && !id) {
-                    const body = '<div class="top"><div><h1>Funny.py Apps</h1><div class="muted">Install apps, then open them in their own Funny.py tab.</div></div><div>▦ Funny.py</div></div><div class="grid"><article class="card"><div class="icon">▦</div><h2>Interf$ce OS</h2><p class="muted">whoisbro123.bonto.page</p><button class="btn" id="appAction">Install</button></article></div>' + nav +
-                    '<script>(function(){const key="funny.py:installedApps";let a=[];try{a=JSON.parse(localStorage.getItem(key)||"[]")}catch(e){}const b=document.getElementById("appAction");function draw(){const yes=a.includes("interface-os");b.textContent=yes?"Open":"Install";b.onclick=function(){if(!yes){a.push("interface-os");localStorage.setItem(key,JSON.stringify(a));draw()}else{parent.postMessage({type:"funny-open-app",id:"interface-os"}, "*")}}}draw()})();' + closeScript;
-                    return header + body + footer;
-                }
-                if (section === "apps" && id === "interface-os") {
-                    return header + '<h1>Interf$ce OS</h1><p class="muted">Install this app from funny.py//apps, then launch it here.</p><button class="btn" onclick="parent.postMessage({type:\'funny-open-app\',id:\'interface-os\'},\'*\')">Open Interf$ce OS</button>' + nav + footer;
-                }
-                if (section === "extensions") {
-                    return header + '<div class="top"><div><h1>Funny.py Extensions</h1><p class="muted">Funny.py uses GUST’s built-in extension manager and Chrome extension support.</p></div></div><div class="grid"><article class="card"><div class="icon">🧩</div><h2>Extension Store</h2><p class="muted">Browse and install supported browser extensions.</p><button class="btn" onclick="parent.postMessage({type:\'funny-open-extensions\'},\'*\')">Open extension store</button></article><article class="card"><div class="icon">⚙️</div><h2>Manage extensions</h2><p class="muted">Open the browser’s extension manager.</p><button class="btn secondary" onclick="parent.postMessage({type:\'funny-open-extensions\'},\'*\')">Manage</button></article></div>' + nav + footer;
-                }
-                if (section === "settings") {
-                    return header + '<h1>Funny.py Settings</h1><p class="muted">Connection preferences are managed by the GUST WISP engine.</p><article class="card"><h2>WISP connection</h2><p class="muted">Default, Truffled, Anura, or your own WISP WebSocket URL.</p><button class="btn" onclick="parent.postMessage({type:\'funny-hub-go\',url:\'gust://settings/connection\'},\'*\')">Open WISP settings</button></article>' + nav + footer;
-                }
-                if (section === "games" && !id) {
-                    const body = '<div class="top"><div><h1>Funny.py Games</h1><p class="muted">Game catalog powered by LuminSDK.</p></div><div>🎮</div></div><div id="gameStatus" class="status">Connecting to LuminSDK…</div><div id="gameGrid" class="grid"></div>' + nav +
-                    '<script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js">' + closeScript +
-                    '<script>(async()=>{const s=document.getElementById("gameStatus"),g=document.getElementById("gameGrid");try{await Lumin.init({headless:true});const r=await Lumin.getGames({page:1,limit:30});s.textContent="Showing "+r.games.length+" games";for(const game of r.games){const card=document.createElement("article");card.className="card game";const img=document.createElement("img");try{img.src=await Lumin.getImageUrl(game.image_token)}catch(e){}const name=document.createElement("h2");name.textContent=game.name;const cat=document.createElement("p");cat.className="muted";cat.textContent=game.category||"Game";card.append(img,name,cat);card.onclick=()=>parent.postMessage({type:"funny-hub-go",url:"funny.py//games/"+encodeURIComponent(game.id)},"*");g.appendChild(card)}}catch(e){s.textContent="LuminSDK could not load games: "+(e.message||e)}})();' + closeScript;
-                    return header + body + footer;
-                }
-                if (section === "games" && id) {
-                    const gameJson = JSON.stringify(decodeURIComponent(id)).replace(/</g,"\\u003c");
-                    const body = '<div class="top"><div><h1>Funny.py Game</h1><p class="muted">funny.py//games/' + id.replace(/</g,"&lt;") + '</p></div><button class="btn secondary" onclick="parent.postMessage({type:\'funny-hub-go\',url:\'funny.py//games\'},\'*\')">All games</button></div><div id="gameStatus" class="status">Loading game…</div><iframe id="gamePlayer" class="gameframe" allow="autoplay; fullscreen; pointer-lock; gamepad" allowfullscreen></iframe><script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js">' + closeScript +
-                    '<script>(async()=>{const id=' + gameJson + ';const s=document.getElementById("gameStatus");try{await Lumin.init({headless:true});const result=await Lumin.getGameUrl(id);document.getElementById("gamePlayer").src=result.url;s.textContent="Playing with LuminSDK"}catch(e){s.textContent="Could not launch game: "+(e.message||e)}})();' + closeScript;
-                    return header + body + footer;
-                }
-                return header + '<h1>Funny.py</h1><p class="muted">Unknown Funny.py page.</p>' + nav + footer;
-            }
-            function renderFunnyHub(route, push) {
-                const clean = route.replace(/^funny\.py\/\//i, "");
-                const title = clean.startsWith("apps") ? "Funny.py Apps" : clean.startsWith("games") ? "Funny.py Games" : clean.startsWith("extensions") ? "Funny.py Extensions" : "Funny.py Settings";
-                try { abortAllRequests(); closeAllSockets(); } catch (e) {}
-                hideNewTab(); hideSettingsPage();
-                pageUrl = route; isErrorPage = false;
-                frame.onload = null;
-                frame.srcdoc = funnyHubDocument(clean || "apps");
-                urlInput.value = route; setTabTitle(title); updateTabUrl(route);
-                updateSecurityChip(route, "neutral"); setStatus("ready", "Ready");
-                if (push) { hist = hist.slice(0, histIdx + 1); hist.push(route); histIdx = hist.length - 1; updateNav(); }
-                const tab = getActiveTab(); if (tab) { tab.url = route; tab.title = title; }
-                renderTabs();
-            }
-            window.addEventListener("message", async (event) => {
-                if (event.source !== frame.contentWindow || !event.data) return;
-                const data = event.data;
-                if (data.type === "funny-hub-go" && typeof data.url === "string") { go(data.url); return; }
-                if (data.type === "funny-open-extensions") { go(EXTSTORE_INTERNAL); return; }
-                if (data.type === "funny-open-app" && data.id === "interface-os") {
-                    const key = "funny.py:installedApps"; let installed = [];
-                    try { installed = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
-                    if (!installed.includes("interface-os")) { go("funny.py//apps"); return; }
-                    const route = "funny.py//apps/interface-os";
-                    await go("https://whoisbro123.bonto.page");
-                    const tab = getActiveTab(); if (tab) { tab.url = route; tab.title = "Interf$ce OS"; }
-                    urlInput.value = route; updateTabUrl(route); updateSecurityChip(route, "neutral"); renderTabs();
-                }
-            });
-            $("funnyAppsBtn")?.addEventListener("click", () => go("funny.py//apps"));
-            $("funnyGamesBtn")?.addEventListener("click", () => go("funny.py//games"));
-            $("funnyExtensionsBtn")?.addEventListener("click", () => go("funny.py//extensions"));
-
             async function go(url, push = true, method = "GET", body = null, _isRetry = false) {
                 const initiatorTabId = activeTabId;
 
@@ -19024,10 +18918,6 @@ _VIEWER_DL_JS +
                     return;
                 }
 
-                if (url.startsWith("funny.py//")) {
-                    if (activeTabId === initiatorTabId) renderFunnyHub(url, push);
-                    return;
-                }
                 if (SKIN_PAGES[url]) {
                     if (activeTabId === initiatorTabId) showSkinPage(url, push);
                     return;
@@ -22021,12 +21911,6 @@ _VIEWER_DL_JS +
             function settingsPopulate() {
                 const wispInput = $("settingsWispInput");
                 if (wispInput) wispInput.value = WISP;
-                const wispPreset = $("settingsWispPreset");
-                if (wispPreset) {
-                    const presets = ["wss://wisp.mercurywork.shop/", "wss://truffled.lol", "wss://anura.pro"];
-                    wispPreset.value = presets.includes(WISP) ? WISP : "custom";
-                    wispPreset.onchange = () => { if (wispPreset.value !== "custom" && wispInput) wispInput.value = wispPreset.value; };
-                }
                 renderWispPoolList();
                 const blockSwitch = $("settingsBlockSwitch");
                 if (blockSwitch) blockSwitch.classList.toggle("on", blockEnabled);
@@ -22082,9 +21966,7 @@ _VIEWER_DL_JS +
                 const wispSave = $("settingsWispSave");
                 const wispReset = $("settingsWispReset");
                 const wispInput = $("settingsWispInput");
-                const wispPreset = $("settingsWispPreset");
                 const wispStatus = $("settingsWispStatus");
-                if (wispPreset && wispInput) wispPreset.onchange = () => { if (wispPreset.value !== "custom") wispInput.value = wispPreset.value; };
 
                 async function applyWispUrl(val) {
                     WISP = val;
@@ -23254,7 +23136,7 @@ _VIEWER_DL_JS +
                 {
                     target: null,
                     icon: '<i class="fas fa-wind"></i>',
-                    title: 'Welcome to Funny.py',
+                    title: 'Welcome to GUST',
                     body: 'A fast, private browser by Nautilus Labs. This tour covers all the key controls and takes under a minute, and can be restarted anytime from Settings.',
                     pos: 'center'
                 },
@@ -23340,7 +23222,7 @@ _VIEWER_DL_JS +
                     target: '#blockToggle',
                     icon: '<i class="fas fa-shield-halved"></i>',
                     title: 'Ad and Tracker Blocking',
-                    body: 'Funny.py blocks ads and trackers by default. The badge shows your current status. Click on it to toggle it off if a site is not loading correctly.',
+                    body: 'GUST blocks ads and trackers by default. The badge shows your current status. Click on it to toggle it off if a site is not loading correctly.',
                     pos: 'below-left'
                 },
                 {
@@ -23379,7 +23261,7 @@ _VIEWER_DL_JS +
                     target: '#ntGithubBtn',
                     icon: '<i class="fab fa-github"></i>',
                     title: 'GitHub',
-                    body: 'Funny.py is open source. Click to view the repository, report issues, or contribute.',
+                    body: 'GUST is open source. Click to view the repository, report issues, or contribute.',
                     pos: 'above',
                     requiresNewTab: true
                 },
@@ -24631,7 +24513,7 @@ _VIEWER_DL_JS +
                     skins: mi('fa-solid fa-mask', 'Skins', () => go('gust://settings/skins')),
                     settings: mi('fa-solid fa-gear', 'Settings', () => go('gust://settings')),
                     fullscreen: mi('fa-solid fa-expand', 'Fullscreen', () => { const b = $('fullscreenBtn'); if (b) b.click(); }),
-                    about: mi('fa-solid fa-circle-info', 'About Funny.py', () => go('gust://settings/about'))
+                    about: mi('fa-solid fa-circle-info', 'About GUST', () => go('gust://settings/about'))
                 };
 
                 // ── Chrome 150 ⋮ menu — full item set with accelerators & submenus ──
