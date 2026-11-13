@@ -1,1 +1,10 @@
 #funnyFx{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.75}#home{position:relative;isolation:isolate;overflow:hidden}#home>.homeinner{position:relative;z-index:1}.fx-field{margin:12px 0;padding:13px;border:1px solid var(--line);border-radius:12px;background:#ffffff06}.fx-field label{display:block;color:#c9cbd5;margin:0 0 7px;font-weight:600}.fx-field input:not([type=checkbox]):not([type=range]),.fx-field select{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:#11131b;color:var(--text)}.fx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fx-grid .fx-field{margin:0}.fx-check{display:flex!important;align-items:center;gap:9px!important}.fx-check input{accent-color:var(--accent);width:17px;height:17px}.fx-status{font-size:12px;color:#aeb4c6;line-height:1.55}.fx-warning{border:1px solid #a66a35;background:#6b3c1828;border-radius:10px;padding:10px;color:#ffd4a5}.fx-good{border:1px solid #2d8058;background:#174d3428;border-radius:10px;padding:10px;color:#a9f2c8}@media(max-width:600px){.fx-grid{grid-template-columns:1fr}}
+.funny-editor .fce-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.funny-editor textarea{width:100%;min-height:260px;resize:vertical;background:#0b0d13;color:#e9e9f2;border:1px solid #343846;border-radius:9px;padding:12px;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;tab-size:2}
+.funny-editor .fce-preview iframe{width:100%;height:570px;border:1px solid #343846;border-radius:9px;background:white}
+.funny-editor .fce-preview{grid-column:span 1}
+.no-animations *, .no-animations *::before, .no-animations *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+#privacyCover{background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
+#privacyCover::before{content:"";position:absolute;inset:0;background:#05060a44;pointer-events:none}
+#privacyCover .privacy-card{position:relative;z-index:1}
+@media(max-width:760px){.funny-editor .fce-grid{grid-template-columns:1fr}.funny-editor .fce-preview iframe{height:420px}}
