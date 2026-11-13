@@ -150,6 +150,8 @@ async function showProxiedPage(url,tab=activeTab(),forceReload=false){
   frame.dataset.objectUrl=objectUrl;frame.removeAttribute("srcdoc");frame.src=objectUrl;
  }else{
   let html=await response.text();if(tab.navToken!==token)return;
+  /* Cross-origin stylesheets are allowed as ordinary CSS requests. Remove crossorigin, which forces a CORS fetch and breaks when Funny.py is opened from file:// or srcdoc. */
+  html=html.replace(/(<link\b[^>]*?)\s+crossorigin(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?/gi,"$1");
   const finalUrl=response.url||target;
   const baseTag='<base href="'+escapeHTML(finalUrl)+'">';
   const bridge='<script>(function(){const base=document.baseURI;document.addEventListener("click",function(e){let a=e.target.closest("a[href]");if(!a)return;let u;try{u=new URL(a.getAttribute("href"),base)}catch(_){return}if(!/^https?:$/.test(u.protocol))return;e.preventDefault();parent.postMessage({__funnyWispNav:u.href,tabId:'+JSON.stringify(tab.id)+'},"*")},true);document.addEventListener("submit",function(e){let f=e.target;if(!(f instanceof HTMLFormElement))return;let u;try{u=new URL(f.action||location.href,base)}catch(_){return}e.preventDefault();parent.postMessage({__funnyWispNav:u.href,tabId:'+JSON.stringify(tab.id)+'},"*")},true)})();<\/script>';
