@@ -35,4 +35,108 @@ window.renderInternalSettings=settingsPage;const oldApply=window.applySettings;w
 const oldPrivacy=window.applyPrivacyPreset;window.applyPrivacyPreset=function(){if(oldPrivacy)oldPrivacy();let p=load("funny_privacy",{}),card=$("#privacyCover .privacy-card");if(card){card.querySelector("h2").textContent=p.text||"Funny.py";card.querySelector("p").textContent=(p.icon||"◼")+" · Return to continue";const cover=$("#privacyCover");const styles={midnight:"linear-gradient(135deg,#12141d,#25213a)",violet:"linear-gradient(135deg,#33205c,#7656e8)",plain:"#050506",school:"linear-gradient(135deg,#dce8f5,#aebed2)",calculator:"linear-gradient(135deg,#172d25,#101a16)",custom:"linear-gradient(135deg,#20232d,#101116)"};cover.style.background=styles[p.preset]||styles.midnight;if(p.preset==="school"){card.style.color="#17243a";card.querySelector("p").textContent="Study notes · "+(p.text||"Remember to finish your work")}else if(p.preset==="calculator"){card.style.color="#d2ffe2";card.querySelector("p").textContent="0 · "+(p.text||"Calculator")}}};
 
 start();window.funnySiteDetector=check;window.funnyLocalAI=q=>String(q).toLowerCase().includes("wisp")?"WISP is the WebSocket transport for proxied page requests.":"I can assist with Funny.py settings, WISP, backgrounds, stealth cover and URL safety.";
+
+
+/* Requested Funny.py additions: privacy image cover, code editor, browser defaults. */
+const _settingsPageOriginal=settingsPage;
+settingsPage=function(){
+ _settingsPageOriginal();
+ const coverField=$("#zCoverText")?.closest(".fx-field");
+ if(coverField&&!$("#zCoverImage")){
+  const label=document.createElement("label");label.textContent="Full-screen cover image URL";
+  const input=document.createElement("input");input.id="zCoverImage";input.type="url";input.placeholder="Paste the image URL here";
+  input.value=load("funny_privacy",{}).image||"";
+  coverField.append(label,input);
+  const note=document.createElement("p");note.className="fx-status";note.textContent="The image fills the screen whenever Funny.py loses focus. The image itself has not been supplied in this chat yet.";
+  coverField.append(note);
+ }
+ const defaultsCard=$("#zSearch")?.closest(".fx-field");
+ if(defaultsCard&&!$("#zHomePage")){
+  const add=(labelText,id,type,value)=>{const l=document.createElement("label");l.textContent=labelText;const el=document.createElement("input");el.id=id;el.type=type;if(type==="checkbox")el.checked=!!value;else el.value=value??"";defaultsCard.append(l,el);};
+  add("Home page URL","zHomePage","url",load("funny_chrome_defaults",{}).home||"");
+  add("Restore previous tabs on startup","zRestoreTabs","checkbox",load("funny_chrome_defaults",{}).restoreTabs!==false);
+  add("Smooth scrolling","zSmoothScroll","checkbox",load("funny_chrome_defaults",{}).smoothScroll!==false);
+  add("Warn before opening pop-up windows","zPopupWarn","checkbox",load("funny_chrome_defaults",{}).popupWarn!==false);
+  add("Show bookmarks bar","zShowBookmarks","checkbox",load("funny_chrome_defaults",{}).showBookmarks!==false);
+  add("Enable interface animations","zAnimations","checkbox",load("funny_chrome_defaults",{}).animations!==false);
+  const saveBtn=$("#zSave");
+  if(saveBtn){
+   const oldSave=saveBtn.onclick;
+   saveBtn.onclick=()=>{
+    oldSave?.();
+    const p=load("funny_privacy",{});
+    p.image=$("#zCoverImage")?.value.trim()||"";
+    save("funny_privacy",p);applyPrivacyPreset();
+    save("funny_chrome_defaults",{
+      home:$("#zHomePage")?.value.trim()||"",
+      restoreTabs:$("#zRestoreTabs")?.checked!==false,
+      smoothScroll:$("#zSmoothScroll")?.checked!==false,
+      popupWarn:$("#zPopupWarn")?.checked!==false,
+      showBookmarks:$("#zShowBookmarks")?.checked!==false,
+      animations:$("#zAnimations")?.checked!==false
+    });
+    document.body.classList.toggle("no-animations",!$("#zAnimations")?.checked);
+    document.body.classList.toggle("hide-bookmarks",!$("#zShowBookmarks")?.checked);
+   };
+  }
+ }
+};
+window.renderInternalSettings=settingsPage;
+
+/* Use the uploaded/selected image as the actual full-screen focus-loss cover. */
+const _applyPrivacyPreset=window.applyPrivacyPreset;
+window.applyPrivacyPreset=function(){
+ _applyPrivacyPreset?.();
+ const p=load("funny_privacy",{});
+ const cover=$("#privacyCover");
+ if(!cover)return;
+ if(p.image){
+  cover.style.backgroundImage="url("+JSON.stringify(p.image)+")";
+  cover.style.backgroundPosition="center";
+  cover.style.backgroundSize="cover";
+  cover.style.backgroundRepeat="no-repeat";
+ }else{
+  cover.style.backgroundImage="";
+ }
+};
+const _privacyEventOriginal=window.privacyEvent;
+function showPrivacyCover(){
+ const p=load("funny_privacy",{enabled:false});
+ $("#privacyCover")?.classList.toggle("visible",!!p.enabled);
+}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)showPrivacyCover();else $("#privacyCover")?.classList.remove("visible")});
+window.addEventListener("blur",()=>{if(load("funny_privacy",{enabled:false}).enabled)showPrivacyCover()});
+window.addEventListener("focus",()=>$("#privacyCover")?.classList.remove("visible"));
+
+/* HTML/CSS/JS editor extension with a live preview and standalone export. */
+function renderFunnyCodeEditor(){
+ const saved=load("funny_code_editor",{html:"<!doctype html>\n<html>\n<head><meta charset=\"utf-8\"><title>My page</title></head>\n<body>\n  <h1>Hello, world!</h1>\n  <p>Edit HTML, CSS and JavaScript, then preview your page.</p>\n</body>\n</html>",css:"body{font-family:system-ui;padding:2rem;background:#101116;color:white}h1{color:#a78bfa}",js:"console.log('Hello from Funny.py Code Editor');"});
+ setInternalContent('<div class="internal-wrap funny-editor"><div class="internal-top"><div><h2>Code Editor</h2><div class="internal-sub">Create standalone HTML pages with HTML, CSS and JavaScript.</div></div><div class="row"><button class="action" id="fcePreview">Run preview</button><button class="action primary" id="fceDownload">Download HTML</button></div></div><div class="fce-grid"><section class="fx-field"><h3>HTML</h3><textarea id="fceHtml" spellcheck="false"></textarea></section><section class="fx-field"><h3>CSS</h3><textarea id="fceCss" spellcheck="false"></textarea></section><section class="fx-field"><h3>JavaScript</h3><textarea id="fceJs" spellcheck="false"></textarea></section><section class="fx-field fce-preview"><h3>Live preview</h3><iframe id="fceFrame" sandbox="allow-scripts" title="HTML preview"></iframe></section></div><p class="fx-status">Your code stays in this browser until you download the HTML file. Preview scripts run in a sandbox.</p></div>');
+ const h=$("#fceHtml"),c=$("#fceCss"),j=$("#fceJs");
+ h.value=saved.html;c.value=saved.css;j.value=saved.js;
+ const build=()=>{let doc=h.value;const style="<style>"+c.value.replace(/<\/style/gi,"<\\/style")+"</style>";const script="<script>"+j.value.replace(/<\/script/gi,"<\\/script")+"</scr"+"ipt>";if(/<\/head>/i.test(doc))doc=doc.replace(/<\/head>/i,style+"</head>");else doc=style+doc;if(/<\/body>/i.test(doc))doc=doc.replace(/<\/body>/i,script+"</body>");else doc+=script;return doc};
+ const preview=()=>{const doc=build();$("#fceFrame").srcdoc=doc;save("funny_code_editor",{html:h.value,css:c.value,js:j.value})};
+ $("#fcePreview").onclick=preview;
+ $("#fceDownload").onclick=()=>{const blob=new Blob([build()],{type:"text/html;charset=utf-8"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="my-page.html";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+ [h,c,j].forEach(el=>el.addEventListener("input",()=>save("funny_code_editor",{html:h.value,css:c.value,js:j.value})));
+ preview();
+}
+const _renderInternalOriginal=window.renderInternal;
+window.renderInternal=function(route){
+ if(route==="extensions/code-editor"){renderFunnyCodeEditor();return}
+ return _renderInternalOriginal(route);
+};
+const _renderExtensionsOriginal=window.renderExtensions;
+window.renderExtensions=function(){
+ _renderExtensionsOriginal();
+ const root=$("#internalview .appgrid");
+ if(root&&!$("#fceExtensionCard")){
+  const card=document.createElement("article");card.className="appcard";card.id="fceExtensionCard";
+  card.innerHTML='<div class="appicon">⌨️</div><strong>HTML Code Editor</strong><p>Write HTML, CSS and JavaScript with a live preview and download your finished page as one HTML file.</p><button class="primary" id="fceOpen">Open editor</button>';
+  root.appendChild(card);$("#fceOpen").onclick=()=>navigate("funny.py//extensions/code-editor");
+ }
+};
+
+/* Restore a clear Chrome-style settings surface and retain the original search-engine picker. */
+
 })();
